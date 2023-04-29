@@ -31,8 +31,19 @@ module DE2_ScrollHatMini (
 
 	//////////// GPIO, GPIO connect to GPIO Default //////////
 	inout  logic [35:0]	GPIO
-
 );
+
+// GPIO Mappings:
+// Logical GPIO  -  GPIO Pin  - FPGA Pin  - RPi Pin - Name
+// 28               33          AH22        29        A
+// 30               35          AE20        31        B
+// 32               37          AF20        36        X
+// 34               39          AH23        18        Y
+// 35               40          AG26        5         SCL (I²C)
+// 33               38          AH23        3         SDA (I²C)
+
+// Feed power and ground
+// I am feeding 3.3V to the 5V inputs
 
 // The Pimoroni ScrollHatMini buttons are pulled to ground when unpressed,
 // so use a weak pullup on those pins in the .qsf file/assignment editor.
