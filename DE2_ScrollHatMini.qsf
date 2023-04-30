@@ -338,7 +338,6 @@ set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name VERILOG_SHOW_LMF_MAPPING_MESSAGES OFF
 set_global_assignment -name VERILOG_MACRO "IS_QUARTUS=true"
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[35]
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
@@ -347,7 +346,6 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[32]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[30]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[28]
 set_global_assignment -name QIP_FILE altiobuf_opendrain.qip
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[33]
 set_global_assignment -name SYSTEMVERILOG_FILE I2C_CONTROLLER.sv
 set_global_assignment -name VERILOG_FILE Pushbutton_Debouncer.v
 set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON

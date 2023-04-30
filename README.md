@@ -6,13 +6,18 @@ Copyright ⓒ 2023 Douglas P. Fields, Jr. All Rights Reserved.
 # FPGA Connections
 
 Use 3.3V GPIO (pins 29-30) per IS31FL3731
+* Tested with both 5V and 3.3V feeds from GPIO and both work
+  (5V may be brighter)
 
+GPIO connections:
 * Buttons: GPIO 28, 30, 32, 34 (odd pins 33-39)
 * I2C SDA: GPIO 33 (pin 38)
 * I2C SCL: GPIO 35 (pin 40)
   * This must be open collector, pull up resistor (typically 4.7Ω)
 
-# PiMoroni Scroll Hat Mini
+
+
+# PiMoroni Scroll Hat Mini Reverse Engineering
 
 * [Product page](https://shop.pimoroni.com/products/scroll-hat-mini)
 * [Driver chip](https://cdn.shopify.com/s/files/1/0174/1800/files/31FL3731_f2c53799-e354-4fe7-8111-71cfdacf2712.pdf?27380) - ISSI IS31FL3731
@@ -33,9 +38,7 @@ Pinout:
   * = PIN 29, 31, 36, 18
   * They are floating when unpressed, and pulled to ground when pressed
 
-
-
-# Others
+## Other References
 
 * [Pinout for Unicorn HAT Mini](https://pinout.xyz/pinout/unicorn_hat_mini#)
   * ABXY on GPIO 5,6,16,20 or pin 29, 31, 36, 38 
@@ -43,7 +46,7 @@ Pinout:
 
 
 
-
+# How to use it?
 
 From: https://github.com/pimoroni/scroll-phat-hd/blob/master/library/scrollphathd/is31fl3731.py
 
@@ -93,18 +96,24 @@ _NUM_FRAMES = 8
         0b01111111, 0b00000000,
     ]
 
-
 ## To write frame data
 
-1. Set the bank:
-  * Write to 0xFD the bank you want 0-7
-2. Set the enable pattern above starting at 0
+1. Take it out of shutdown mode:
+  * Set bank to function register: write 8'b0000_1011 to 8'hFD
+  * Write 8'h01 to 8'h0A
+1. Set the frame bank:
+  * Write to 0xFD the bank you want, 0-7
+2. Set the enable pattern above starting at address 0
+  * Send seventeen 0111_1111 and one 0000_0000 to addresses 0-11
 3. Write data starting at COLOR_OFFSET for brightness
+  * See [example gamma curve](https://github.com/pimoroni/scroll-phat-hd/blob/master/library/scrollphathd/__init__.py#L20)
+    or the Gamma curves in the data sheet
+  * 255 is super bright
 4. Show the specified frame
    * Switch to config bank
    * Write frame # to FRAME_REGISTER (1)
 
-# Turn all of them on
+## Turn all of them on
 
 1. Write 0 into FD
 2. Send seventeen 0111_1111 and one 0000_0000 to addresses 0-11

@@ -114,6 +114,7 @@ logic [7:0] data;
 logic [REPEAT_SZ-1:0] data_repeat;
 
 localparam LOC_COMMAND_REGISTER = 8'hFD;
+localparam LOC_SHUTDOWN_REGISTER = 8'h0A; // bit 0 is shutdown, defaults to 0
 localparam PAGE_FUNCTION_REGISTER = 8'b0000_1011;
 localparam PAGE_FRAME_1 = 8'b0000_0000;
 localparam FRAME_LED_CONTROL_REGISTER = 8'h00;
@@ -151,13 +152,15 @@ I2C_CONTROLLER #(
 
 typedef enum int unsigned {
   S_POWER_UP_DELAY = 0,
-  S_SET_FRAME_0 = 1,
-  S_SET_ENABLES_1 = 2,
-  S_SET_ENABLES_2 = 3,
-  S_SET_PWM = 4,
-  S_DONE = 5,
-  S_SEND_COMMAND = 6,
-  S_AWAIT_COMMAND = 7
+  S_SET_FUNCTION_REGISTER = 1,
+  S_CLEAR_SHUTDOWN = 2,
+  S_SET_FRAME_0   = 3,
+  S_SET_ENABLES_1 = 4,
+  S_SET_ENABLES_2 = 5,
+  S_SET_PWM       = 6,
+  S_DONE          = 7,
+  S_SEND_COMMAND  = 8,
+  S_AWAIT_COMMAND = 9
 } state_t;
 
 state_t state;
@@ -195,10 +198,28 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
 
   S_POWER_UP_DELAY: begin: power_delay
     if (power_up_delay == 0)
-      state <= S_SET_FRAME_0;
+      state <= S_SET_FUNCTION_REGISTER;
     else
       power_up_delay <= power_up_delay - 1'd1;
   end: power_delay
+
+  S_SET_FUNCTION_REGISTER: begin
+      send_location <= LOC_COMMAND_REGISTER;
+      send_data     <= PAGE_FUNCTION_REGISTER;
+      send_repeat   <= '0;
+
+      return_after_command <= S_CLEAR_SHUTDOWN;
+      state                <= S_SEND_COMMAND;
+  end
+
+  S_CLEAR_SHUTDOWN: begin
+      send_location <= LOC_SHUTDOWN_REGISTER;
+      send_data     <= 8'h01; // Disable shutdown (bit 0)
+      send_repeat   <= '0;
+
+      return_after_command <= S_SET_FRAME_0;
+      state                <= S_SEND_COMMAND;
+  end
 
   S_SET_FRAME_0: begin
       send_location <= LOC_COMMAND_REGISTER;
@@ -231,7 +252,7 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
 
   S_SET_PWM: begin
       send_location <= next_pwm_location;
-      send_data     <= '1;
+      send_data     <= 8'b0000_1000 << repeat_pwm_count; // Vary the brightness (8'hFF is super bright)
       send_repeat   <= PWM_EACH_TIME;
 
       next_pwm_location <= next_pwm_location + PWM_EACH_TIME;
