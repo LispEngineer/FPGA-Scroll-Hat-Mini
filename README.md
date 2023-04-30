@@ -31,13 +31,13 @@ There are 144 memory areas, two matrixes of 8 x 9
 
            00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 - columns
           ┌--------------------------------------------------
-        0 |                     16 06 08
+        0 |86 76 66 56 46 36 26 16 06 08 18 28 38 48 58 68 78
         1 |                     15 05 09
         2 |                     14 04 0A
         3 |                     13 03 0B
         4 |                     12 02 0C
         5 |                     11 01 0D
-        6 |                     10 00 0E
+        6 |80 70 60 50 40 30 20 10 00 0E 1E 2E 3E 4E 5E 6E 7E
 
 # PiMoroni Scroll Hat Mini Reverse Engineering
 

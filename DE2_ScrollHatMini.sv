@@ -195,9 +195,47 @@ assign LEDR[17:14] = return_after_command;
 assign LEDR[13:10] = subroutine_calls;
 assign LEDG[8:5] = {busy, success, ever_abort, activate};
 
-logic [NUM_PWM_REGISTERS-1:0] shm_leds = 1;
 logic [7:0] which_led;
 
+// We have physical leds in a 17x7 matrix
+logic [NUM_LEDS-1:0] physical_leds = 1;
+// And we have in-memory LEDs
+logic [NUM_PWM_REGISTERS-1:0] shm_leds;
+
+// Map a 17x7 array (with the first entry at the top left and
+// the last at the bottom right) to the 144 memory locations.
+/*
+           00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 - columns
+          ┌--------------------------------------------------
+        0 |86 76 66 56 46 36 26 16 06 08 18 28 38 48 58 68 78
+        1 |                     15 05 09
+        2 |                     14 04 0A
+        3 |                     13 03 0B
+        4 |                     12 02 0C
+        5 |                     11 01 0D
+        6 |80 70 60 50 40 30 20 10 00 0E 1E 2E 3E 4E 5E 6E 7E
+*/
+always begin
+  shm_leds = '0;
+  for (int i = 0; i < 9; i++) begin: p1
+    shm_leds[8'h10 * (8 - i) + 6] = physical_leds[i + 17 * 0];
+    shm_leds[8'h10 * (8 - i) + 5] = physical_leds[i + 17 * 1];
+    shm_leds[8'h10 * (8 - i) + 4] = physical_leds[i + 17 * 2];
+    shm_leds[8'h10 * (8 - i) + 3] = physical_leds[i + 17 * 3];
+    shm_leds[8'h10 * (8 - i) + 2] = physical_leds[i + 17 * 4];
+    shm_leds[8'h10 * (8 - i) + 1] = physical_leds[i + 17 * 5];
+    shm_leds[8'h10 * (8 - i) + 0] = physical_leds[i + 17 * 6];
+  end: p1
+  for (int i = 0; i < 8; i++) begin: p2
+    shm_leds[8'h10 * i + 8]  = physical_leds[9 + i + 17 * 0];
+    shm_leds[8'h10 * i + 9]  = physical_leds[9 + i + 17 * 1];
+    shm_leds[8'h10 * i + 10] = physical_leds[9 + i + 17 * 2];
+    shm_leds[8'h10 * i + 11] = physical_leds[9 + i + 17 * 3];
+    shm_leds[8'h10 * i + 12] = physical_leds[9 + i + 17 * 4];
+    shm_leds[8'h10 * i + 13] = physical_leds[9 + i + 17 * 5];
+    shm_leds[8'h10 * i + 14] = physical_leds[9 + i + 17 * 6];
+  end: p2
+end
 
 always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
 
@@ -284,7 +322,7 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
     next_pwm_location <= FRAME_PWM_OFFSET;
     which_led         <= '0;
     state             <= S_UPDATE_ALL;
-    power_up_delay    <= 32'd5_000_000;
+    power_up_delay    <= 32'd1_000_000;
   end
 
   S_UPDATE_ALL: begin
@@ -305,7 +343,8 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
   S_UPDATE_ALL_DONE: begin
     if (power_up_delay == 0) begin
       // Light the next LED
-      shm_leds <= {shm_leds[NUM_PWM_REGISTERS-2:0], shm_leds[NUM_PWM_REGISTERS-1]};
+      // shm_leds <= {shm_leds[NUM_PWM_REGISTERS-2:0], shm_leds[NUM_PWM_REGISTERS-1]};
+      physical_leds <= {physical_leds[NUM_LEDS-2:0], physical_leds[NUM_LEDS-1]};
       state <= S_BEGIN_UPDATE_ALL;
     end else begin
       power_up_delay <= power_up_delay - 1'd1;
