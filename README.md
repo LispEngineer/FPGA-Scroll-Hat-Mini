@@ -43,6 +43,7 @@ There are 144 memory areas, two matrixes of 8 x 9
 # TODO
 
 * Try using built-in weak pull-up to make I2C bus work instead of external pullups
+  * [StackOverflow Question](https://electronics.stackexchange.com/questions/248248/altera-fpga-i-o-weak-pull-ups) on this matter
 * Make a 17x7 (119 bit) register that is used to refresh the screen 50-100x a second
   * Try to write 255s to all the PWM registers and just changing the enables?
 * Enhance I2C controller to send multiple different bytes simultaneously
@@ -78,7 +79,8 @@ Pinout:
 * [Pinout for Unicorn HAT Mini](https://pinout.xyz/pinout/unicorn_hat_mini#)
   * ABXY on GPIO 5,6,16,20 or pin 29, 31, 36, 38 
 
-
+* [Pico Scroll Pack](https://shop.pimoroni.com/en-us/products/pico-scroll-pack)
+  may use the same interface.
 
 
 # How to use it?
