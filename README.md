@@ -39,6 +39,19 @@ There are 144 memory areas, two matrixes of 8 x 9
         5 |                     11 01 0D
         6 |80 70 60 50 40 30 20 10 00 0E 1E 2E 3E 4E 5E 6E 7E
 
+
+# TODO
+
+* Try using built-in weak pull-up to make I2C bus work instead of external pullups
+* Make a 17x7 (119 bit) register that is used to refresh the screen 50-100x a second
+  * Try to write 255s to all the PWM registers and just changing the enables?
+* Enhance I2C controller to send multiple different bytes simultaneously
+  * Maybe 4 or 8?
+* Make a 17x7 (119 byte) RAM and use that to refresh the screen 50-100x a second
+  * Read the RAM in large chunks like 4-8 bytes to do fewer transactions on I2C
+    (reduced overhead, faster refresh rate)
+
+
 # PiMoroni Scroll Hat Mini Reverse Engineering
 
 * [Product page](https://shop.pimoroni.com/products/scroll-hat-mini)

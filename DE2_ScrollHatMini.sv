@@ -322,7 +322,7 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
     next_pwm_location <= FRAME_PWM_OFFSET;
     which_led         <= '0;
     state             <= S_UPDATE_ALL;
-    power_up_delay    <= 32'd1_000_000;
+    power_up_delay    <= 32'd0_000_100;
   end
 
   S_UPDATE_ALL: begin
