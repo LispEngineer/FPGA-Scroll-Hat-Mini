@@ -122,9 +122,12 @@ localparam FRAME_PWM_OFFSET = 8'h24; // Where the PWM registers start - 144 of t
 localparam NUM_LED_CONTROL_REGISTERS = 8'h12; // 0x00-11
 localparam NUM_PWM_REGISTERS = 8'd144; // Not all are connected in our 17x7
 
+localparam NUM_COLS = 8'd17;
+localparam NUM_ROWS = 8'd7;
+localparam NUM_LEDS = (8)'(NUM_COLS * NUM_ROWS); // 17 x 7 = 119
 
 I2C_CONTROLLER #(
-  .CLK_DIV(128),
+  .CLK_DIV(32),
   .REPEAT_SZ(REPEAT_SZ)
 ) scroll_hat_mini_i2c (
   .clk(CLOCK_50),
@@ -151,16 +154,19 @@ I2C_CONTROLLER #(
 );
 
 typedef enum int unsigned {
-  S_POWER_UP_DELAY = 0,
+  S_POWER_UP_DELAY   = 0,
   S_SET_FUNCTION_REGISTER = 1,
-  S_CLEAR_SHUTDOWN = 2,
-  S_SET_FRAME_0   = 3,
-  S_SET_ENABLES_1 = 4,
-  S_SET_ENABLES_2 = 5,
-  S_SET_PWM       = 6,
-  S_DONE          = 7,
-  S_SEND_COMMAND  = 8,
-  S_AWAIT_COMMAND = 9
+  S_CLEAR_SHUTDOWN   = 2,
+  S_SET_FRAME_0      = 3,
+  S_SET_ENABLES_1    = 4,
+  S_SET_ENABLES_2    = 5,
+  S_SET_PWM          = 6,
+  S_BEGIN_UPDATE_ALL = 7,
+  S_UPDATE_ALL       = 8,
+  S_UPDATE_ALL_DONE  = 9,
+  S_DONE             = 10,
+  S_SEND_COMMAND     = 11,
+  S_AWAIT_COMMAND    = 12
 } state_t;
 
 state_t state;
@@ -188,6 +194,9 @@ assign LEDR[9:6] = state;
 assign LEDR[17:14] = return_after_command;
 assign LEDR[13:10] = subroutine_calls;
 assign LEDG[8:5] = {busy, success, ever_abort, activate};
+
+logic [NUM_PWM_REGISTERS-1:0] shm_leds = 1;
+logic [7:0] which_led;
 
 
 always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
@@ -233,7 +242,7 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
   S_SET_ENABLES_1: begin
       send_location <= FRAME_LED_CONTROL_REGISTER;
       send_data     <= 8'b0111_1111; // Our pattern is 17x this and then 1x 0
-      send_repeat   <= (REPEAT_SZ)'(NUM_LED_CONTROL_REGISTERS - 1'd1);
+      send_repeat   <= (REPEAT_SZ)'(NUM_LED_CONTROL_REGISTERS - 1'd1 - 1'd1); // We already do one, and we want to do one fewer than total registers
 
       return_after_command <= S_SET_ENABLES_2;
       state                <= S_SEND_COMMAND;
@@ -253,7 +262,7 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
   S_SET_PWM: begin
       send_location <= next_pwm_location;
       send_data     <= 8'b0000_1000 << repeat_pwm_count; // Vary the brightness (8'hFF is super bright)
-      send_repeat   <= PWM_EACH_TIME;
+      send_repeat   <= PWM_EACH_TIME - 1'd1; // Repeat one less than total # we want it to do
 
       next_pwm_location <= next_pwm_location + PWM_EACH_TIME;
       repeat_pwm_count  <= repeat_pwm_count + 1'd1;
@@ -261,13 +270,46 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
       state                <= S_SEND_COMMAND;
 
       if (repeat_pwm_count == (NUM_PWM_REPEAT - 1'd1))
-        return_after_command <= S_DONE;
+        return_after_command <= S_BEGIN_UPDATE_ALL;
       else
         return_after_command <= S_SET_PWM;
   end
 
   S_DONE: begin
     // Nothing to do
+  end
+
+  S_BEGIN_UPDATE_ALL: begin
+    // Send data for all LEDs from our shm_leds bits
+    next_pwm_location <= FRAME_PWM_OFFSET;
+    which_led         <= '0;
+    state             <= S_UPDATE_ALL;
+    power_up_delay    <= 32'd5_000_000;
+  end
+
+  S_UPDATE_ALL: begin
+    send_location <= next_pwm_location;
+    send_data     <= shm_leds[which_led] ? 8'hFF : 8'h00; // On or off
+    send_repeat   <= '0;
+
+    next_pwm_location <= next_pwm_location + 1'd1;
+    which_led         <= which_led + 1'd1;
+
+    state <= S_SEND_COMMAND;
+    if (next_pwm_location == FRAME_PWM_OFFSET + NUM_PWM_REGISTERS - 1'd1)
+      return_after_command <= S_UPDATE_ALL_DONE;
+    else
+      return_after_command <= S_UPDATE_ALL;
+  end
+
+  S_UPDATE_ALL_DONE: begin
+    if (power_up_delay == 0) begin
+      // Light the next LED
+      shm_leds <= {shm_leds[NUM_PWM_REGISTERS-2:0], shm_leds[NUM_PWM_REGISTERS-1]};
+      state <= S_BEGIN_UPDATE_ALL;
+    end else begin
+      power_up_delay <= power_up_delay - 1'd1;
+    end
   end
 
   ////////////////////////////////////////////////////////////////////////////////////

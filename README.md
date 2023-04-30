@@ -15,7 +15,29 @@ GPIO connections:
 * I2C SCL: GPIO 35 (pin 40)
   * This must be open collector, pull up resistor (typically 4.7Ω)
 
+## Order of the LEDs on the display vs. in memory
 
+There are 7 rows of 17 LEDs = 119 LEDs.
+
+There are 144 memory areas, two matrixes of 8 x 9
+
+* First 7: bottom of middle column to top
+* 8th: unused? (or is it the 0th unused?)
+* Second 7: top to bottom of column to the right of middle
+* unused
+* Third 7: bottom to top of column to the left of middle
+* unused
+* .. and so forth ..
+
+           00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F 10 - columns
+          ┌--------------------------------------------------
+        0 |                     16 06 08
+        1 |                     15 05 09
+        2 |                     14 04 0A
+        3 |                     13 03 0B
+        4 |                     12 02 0C
+        5 |                     11 01 0D
+        6 |                     10 00 0E
 
 # PiMoroni Scroll Hat Mini Reverse Engineering
 
