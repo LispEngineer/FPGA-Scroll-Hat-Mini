@@ -113,6 +113,14 @@ logic [7:0] location;
 logic [7:0] data;
 logic [REPEAT_SZ-1:0] data_repeat;
 
+localparam LOC_COMMAND_REGISTER = 8'hFD;
+localparam PAGE_FUNCTION_REGISTER = 8'b0000_1011;
+localparam PAGE_FRAME_1 = 8'b0000_0000;
+localparam FRAME_LED_CONTROL_REGISTER = 8'h00;
+localparam FRAME_PWM_OFFSET = 8'h24; // Where the PWM registers start - 144 of them
+localparam NUM_LED_CONTROL_REGISTERS = 8'h12; // 0x00-11
+localparam NUM_PWM_REGISTERS = 8'd144; // Not all are connected in our 17x7
+
 
 I2C_CONTROLLER #(
   .CLK_DIV(128),
@@ -141,9 +149,148 @@ I2C_CONTROLLER #(
   .start_pulse(), .stop_pulse(), .got_ack() // We aren't debugging
 );
 
+typedef enum int unsigned {
+  S_POWER_UP_DELAY = 0,
+  S_SET_FRAME_0 = 1,
+  S_SET_ENABLES_1 = 2,
+  S_SET_ENABLES_2 = 3,
+  S_SET_PWM = 4,
+  S_DONE = 5,
+  S_SEND_COMMAND = 6,
+  S_AWAIT_COMMAND = 7
+} state_t;
 
-always_ff @(posedge CLOCK_50) begin
-end
+state_t state;
+
+// Send command subroutine
+// The state to return to after sending a command
+state_t return_after_command;
+logic [7:0] send_location;
+logic [7:0] send_data;
+logic [REPEAT_SZ-1:0] send_repeat;
+logic send_busy_seen;
+
+logic [31:0] power_up_delay = 32'd50_000_000; // 1 second
+
+// We have to send 144 PWMs, which is 4 x 36
+localparam NUM_PWM_REPEAT = 3'd4;
+localparam PWM_EACH_TIME = (REPEAT_SZ)'(36);
+// FIXME: ASSERT NUM_PWM_REPEAT * PWM_EACH_TIME == 144
+logic [2:0] repeat_pwm_count;
+logic [7:0] next_pwm_location;
+logic [3:0] subroutine_calls = '0;
+logic ever_abort = '0;
+
+assign LEDR[9:6] = state;
+assign LEDR[17:14] = return_after_command;
+assign LEDR[13:10] = subroutine_calls;
+assign LEDG[8:5] = {busy, success, ever_abort, activate};
+
+
+always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
+
+  ever_abort <= ever_abort || abort;
+
+  case (state)
+
+  S_POWER_UP_DELAY: begin: power_delay
+    if (power_up_delay == 0)
+      state <= S_SET_FRAME_0;
+    else
+      power_up_delay <= power_up_delay - 1'd1;
+  end: power_delay
+
+  S_SET_FRAME_0: begin
+      send_location <= LOC_COMMAND_REGISTER;
+      send_data     <= PAGE_FRAME_1;
+      send_repeat   <= '0;
+
+      return_after_command <= S_SET_ENABLES_1;
+      state                <= S_SEND_COMMAND;
+  end
+
+  S_SET_ENABLES_1: begin
+      send_location <= FRAME_LED_CONTROL_REGISTER;
+      send_data     <= 8'b0111_1111; // Our pattern is 17x this and then 1x 0
+      send_repeat   <= (REPEAT_SZ)'(NUM_LED_CONTROL_REGISTERS - 1'd1);
+
+      return_after_command <= S_SET_ENABLES_2;
+      state                <= S_SEND_COMMAND;
+  end
+
+  S_SET_ENABLES_2: begin
+      send_location <= FRAME_LED_CONTROL_REGISTER + NUM_LED_CONTROL_REGISTERS - 1'd1;
+      send_data     <= '0; // 1x 0
+      send_repeat   <= '0;
+
+      return_after_command <= S_SET_PWM;
+      state                <= S_SEND_COMMAND;
+      repeat_pwm_count     <= '0;
+      next_pwm_location    <= FRAME_PWM_OFFSET;
+  end
+
+  S_SET_PWM: begin
+      send_location <= next_pwm_location;
+      send_data     <= '1;
+      send_repeat   <= PWM_EACH_TIME;
+
+      next_pwm_location <= next_pwm_location + PWM_EACH_TIME;
+      repeat_pwm_count  <= repeat_pwm_count + 1'd1;
+
+      state                <= S_SEND_COMMAND;
+
+      if (repeat_pwm_count == (NUM_PWM_REPEAT - 1'd1))
+        return_after_command <= S_DONE;
+      else
+        return_after_command <= S_SET_PWM;
+  end
+
+  S_DONE: begin
+    // Nothing to do
+  end
+
+  ////////////////////////////////////////////////////////////////////////////////////
+  // SUBROUTINES /////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////
+
+  S_SEND_COMMAND: begin: send_command
+    // Send a specific I2C command, and return to the specified state
+    // after it is done.
+    if (busy) begin
+      // Wait for un-busy
+      activate <= '0;
+    end else begin
+      location    <= send_location;
+      data        <= send_data;
+      data_repeat <= send_repeat;
+      activate    <= '1;
+      state       <= S_AWAIT_COMMAND;
+      send_busy_seen <= '0;
+
+      // Debugging
+      subroutine_calls <= subroutine_calls + 1'd1;
+    end
+  end: send_command
+
+  S_AWAIT_COMMAND: begin: await_command
+    // Wait for busy to go true, then go false
+    case ({send_busy_seen, busy})
+    2'b01: begin: busy_starting
+      // We are seeing busy for the first time
+      send_busy_seen <= '1;
+      activate <= '0;
+    end: busy_starting
+    2'b10: begin: busy_ending
+      // Busy is now ending
+      state <= return_after_command;
+    end: busy_ending
+    endcase
+  end: await_command
+
+
+  endcase // state
+
+end: scroll_hat_mini_controller
 
 
 
