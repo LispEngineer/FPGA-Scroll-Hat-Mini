@@ -346,4 +346,10 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[34]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[32]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[30]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[28]
+set_global_assignment -name QIP_FILE altiobuf_opendrain.qip
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[33]
+set_global_assignment -name SYSTEMVERILOG_FILE I2C_CONTROLLER.sv
+set_global_assignment -name VERILOG_FILE Pushbutton_Debouncer.v
+set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
