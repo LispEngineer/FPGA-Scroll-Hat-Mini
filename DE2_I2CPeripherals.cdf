@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(EP4CE115F29) Path("D:/Doug/src/FPGA/DE2_ScrollHatMini/") File("DE2_I2CPeripherals.sof") MfrSpec(OpMask(1));
+		Device PartName(EP4CE115F29) Path("D:/Doug/src/FPGA/DE2_I2CPeripherals/") File("DE2_I2CPeripherals.sof") MfrSpec(OpMask(1));
 
 ChainEnd;
 

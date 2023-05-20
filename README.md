@@ -4,6 +4,14 @@ Copyright ⓒ 2023 [Douglas P. Fields, Jr.](mailto:symbolics@lisp.engineer)
 
 Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
+## TODO
+
+* Enhance `I2C_CONTROLLER` to be able to send a single byte.
+* Enhance `I2C_CONTROLLER` to handle any parameterized size of input instead of
+  a single location & data (and repeat).
+
+
+
 -------------------------------------------------------------------------------
 
 # Pimoroni Scroll Hat Mini for FPGA
@@ -161,3 +169,60 @@ _NUM_FRAMES = 8
 1. Write 0 into FD
 2. Send seventeen 0111_1111 and one 0000_0000 to addresses 0-11
 3. Send 255 in to addresses 24-B3
+
+-------------------------------------------------------------------------------
+
+# Keyestudio I2C 8x8 LED Matrix
+
+References:
+* [Product page](https://wiki.keyestudio.com/Ks0064_keyestudio_I2C_8x8_LED_Matrix_HT16K33)
+* Chip: Vinka VK16K33 (Datasheet in [`datasheets/`](datasheets/) directory.
+* I²C address: 0x70
+* Python code on [GitHub](https://github.com/smittytone/HT16K33-Python)
+
+## Initialization & drawing
+
+Per the [code here](https://github.com/smittytone/HT16K33-Python/blob/main/ht16k33.py#L91),
+it's just a matter of:
+* HT16K33_GENERIC_SYSTEM_ON 0x21
+* HT16K33_GENERIC_DISPLAY_ON 0x81 (no blinking, display on)
+  * Contents of display will be random
+
+For Drawing it's:
+* Write 0x00 (HT16K33_GENERIC_DISPLAY_ADDRESS) and also
+  * Write all the RAM locations in one I²C transaction
+
+See the VK16K33 Datasheet, Rev 1.0 2017-06-27 page 26 for initialization & drawing
+flow chart.
+
+
+## Display mapping
+
+Reverse engineer it with I2CDriver.
+
+Send 00 and then these hex codes:
+
+```
+80 = top col 1 (leftmost)
+40 = top col 8 (rightmost)
+20 = top col 7
+10 = top col 6
+08 = top col 5
+04 = top col 4
+02 = top col 3
+01 = top col 2
+
+00 FF = nothing
+
+00 00 FF = second row, same as above
+
+00 00 00 FF = nothing
+
+00 00 00 00 FF = third row
+```
+
+Or alternately, send `8'b0000_####` with the address of the byte you want to write next.
+
+For dimming, write E0 to EF.
+
+For blinking, write `8'b1000_xBB1` with 00 off, to 11 the slowest blinking

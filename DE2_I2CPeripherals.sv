@@ -46,6 +46,80 @@ module DE2_I2CPeripherals (
   inout        [6:0] EX_IO
 );
 
+////////////////////////////////////////////////////////////////////////////////////////
+// Common I2C Signals
+
+// I²C signals
+logic scl_i, scl_o, scl_e;
+logic sda_i, sda_o, sda_e;
+
+// Use an ALTIOBUF with open-drain set for I2C.
+// Datain means IN TO THE BUFFER, which would be OUT FROM THIS MODULE
+// and hence OUT TO THE EXTERNAL PIN
+altiobuf_opendrain scl_iobuf (
+	.dataio  (EX_IO[0]),
+	.oe      (scl_e),
+	.datain  (scl_o),
+	.dataout (scl_i)
+);
+altiobuf_opendrain sda_iobuf (
+	.dataio  (EX_IO[1]),
+	.oe      (sda_e),
+	.datain  (sda_o),
+	.dataout (sda_i)
+);
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Keyestudio 8x8 matrix demo
+
+
+`define KEYESTUDIO_8x8_DEMO
+`ifdef KEYESTUDIO_8x8_DEMO
+
+localparam MEM_LEN = 16;
+localparam MEM_SZ = $clog2(MEM_LEN);
+
+logic [7:0] mem[MEM_LEN];
+
+initial begin
+  mem = '{default: 8'd0};
+  // Draw a silly box
+  mem[0] = 8'hFF;
+  mem[2] = 8'hC0;
+  mem[4] = 8'hC0;
+  mem[6] = 8'hC0;
+  mem[8] = 8'hC0;
+  mem[10] = 8'hC0;
+  mem[12] = 8'hC0;
+  mem[14] = 8'hFF;
+end
+
+vk16k33_controller keyestudio_8x8_inst (
+  .clk(CLOCK_50),
+  .reset(),
+
+  // I²C Signals
+  .scl_i,
+  .scl_o, 
+  .scl_e,
+  .sda_i, 
+  .sda_o, 
+  .sda_e,
+
+  // LED memory
+  .mem
+);
+
+
+`endif
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Scroll Hat Mini Demo
+
+`undef SCROLL_HAT_MINI_DEMO
+`ifdef SCROLL_HAT_MINI_DEMO
+
 // GPIO Mappings:
 // Logical GPIO  -  GPIO Pin  - FPGA Pin  - RPi Pin - Name
 // 28               33          AH22        29        A
@@ -94,27 +168,7 @@ assign LEDR[3:0] = shm_key;
 // Scroll Hat Mini Display
 // I²C address: 0x74
 
-// I²C signals
-logic scl_i, scl_o, scl_e;
-logic sda_i, sda_o, sda_e;
-
 localparam REPEAT_SZ = 6;
-
-// Use an ALTIOBUF with open-drain set for I2C.
-// Datain means IN TO THE BUFFER, which would be OUT FROM THIS MODULE
-// and hence OUT TO THE EXTERNAL PIN
-altiobuf_opendrain scl_iobuf (
-	.dataio  (EX_IO[0]),
-	.oe      (scl_e),
-	.datain  (scl_o),
-	.dataout (scl_i)
-);
-altiobuf_opendrain sda_iobuf (
-	.dataio  (EX_IO[1]),
-	.oe      (sda_e),
-	.datain  (sda_o),
-	.dataout (sda_i)
-);
 
 localparam NUM_COLS = 8'd17;
 localparam NUM_ROWS = 8'd7;
@@ -164,8 +218,10 @@ always_ff @(posedge CLOCK_50) begin
   end
 end
 
+`endif //  SCROLL_HAT_MINI_DEMO
 
 endmodule
+
 
 
 `ifdef IS_QUARTUS // Defined in Assignments -> Settings -> ... -> Verilog HDL Input
