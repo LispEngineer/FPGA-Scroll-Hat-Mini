@@ -1,69 +1,14 @@
 // Copyright ⓒ 2023 Douglas P. Fields, Jr. symbolics@lisp.engineer
 // Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
-`ifdef IS_QUARTUS // Defined in Assignments -> Settings -> ... -> Verilog HDL Input
-// This doesn't work in Questa for some reason. vlog-2892 errors.
-`default_nettype none // Disable implicit creation of undeclared nets
-`endif
+// Pimoroni Scroll Hat Mini controller (SHM).
+// This handles ONLY the I²C component; the pushbuttons
+// can be handled easily as any other non-debounced input.
 
+// An internal weak-pull-up for the two I²C pins does not work,
+// but the DE2-115's EX_IO pull-ups work fine.
 
-module DE2_ScrollHatMini (
-  //////////// CLOCK //////////
-  input  logic        CLOCK_50,
-  input  logic        CLOCK2_50,
-  input  logic        CLOCK3_50,
-
-  //////////// LED //////////
-  output logic  [8:0] LEDG,
-  output logic [17:0] LEDR,
-
-  //////////// KEY //////////
-  // These are logic 0 when pressed
-  input  logic  [3:0] KEY,
-
-  //////////// SW //////////
-  input  logic [17:0] SW,
-
-  //////////// SEG7 //////////
-  // All of these use logic 0 to light up the segment
-  // These are off with logic 1
-  output logic  [6:0] HEX0,
-  output logic  [6:0] HEX1,
-  output logic  [6:0] HEX2,
-  output logic  [6:0] HEX3,
-  output logic  [6:0] HEX4,
-  output logic  [6:0] HEX5,
-  output logic  [6:0] HEX6,
-  output logic  [6:0] HEX7,
-
-	//////////// GPIO, GPIO connect to GPIO Default //////////
-	inout        [35:0] GPIO,
-
-  // EX_IO
-  // 6 = Pull down
-  // 4 = Pull up & inline resistor
-  // All others = pull up resistors
-  inout        [6:0] EX_IO
-);
-
-// GPIO Mappings:
-// Logical GPIO  -  GPIO Pin  - FPGA Pin  - RPi Pin - Name
-// 28               33          AH22        29        A
-// 30               35          AE20        31        B
-// 32               37          AF20        36        X
-// 34               39          AH23        18        Y
-// EX_IO[0]         13           J10        5         SCL (I²C)
-// EX_IO[1]         11           J14        3         SDA (I²C)
-// EX_IO Vcc        14          3.3V        2/4       5V
-// EX_IO Gnd        12                      6         Gnd
-
-// Feed power and ground
-// I am feeding 3.3V to the 5V input of the SHM, which is fine.
-
-// An internal weak-pull-up for the two I2C pins does not work.
-
-/////////////////////////////////////////////////////////////////////////////////////
-// Scroll Hat Mini Buttons
+// Providing 3.3V to the SHM's 5V seems to work fine.
 
 // The Pimoroni ScrollHatMini buttons are pulled to ground when unpressed,
 // so use a weak pullup on those pins in the .qsf file/assignment editor.
@@ -75,48 +20,61 @@ module DE2_ScrollHatMini (
   set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[28]
 */
 
-assign LEDG[0] = ~GPIO[28];
-assign LEDG[1] = ~GPIO[30];
-assign LEDG[2] = ~GPIO[32];
-assign LEDG[3] = ~GPIO[34];
-
-// The scroll hat mini keys, debounced
-logic [3:0] shm_key;
-
-PushButton_Debouncer db_a (.clk(CLOCK_50), .PB(GPIO[28]), .PB_state(shm_key[0]));
-PushButton_Debouncer db_b (.clk(CLOCK_50), .PB(GPIO[30]), .PB_state(shm_key[1]));
-PushButton_Debouncer db_x (.clk(CLOCK_50), .PB(GPIO[32]), .PB_state(shm_key[2]));
-PushButton_Debouncer db_y (.clk(CLOCK_50), .PB(GPIO[34]), .PB_state(shm_key[3]));
-
-assign LEDR[3:0] = shm_key;
-
-/////////////////////////////////////////////////////////////////////////////////////
-// Scroll Hat Mini Display
-// I²C address: 0x74
-
-// I²C signals
-logic scl_i, scl_o, scl_e;
-logic sda_i, sda_o, sda_e;
-
-localparam REPEAT_SZ = 6;
-
-// assign I2C_GPIO = {GPIO[33], GPIO[35]}; // SDA, SCL
-
 // Use an ALTIOBUF with open-drain set for I2C.
 // Datain means IN TO THE BUFFER, which would be OUT FROM THIS MODULE
-// and hence OUT TO THE EXTERNAL PIN
+// and hence OUT TO THE EXTERNAL PIN.
+// Example:
+/*
 altiobuf_opendrain sda_iobuf (
-	.dataio  (EX_IO[1]),
+	.dataio  (GPIO[33]),
 	.oe      (sda_e),
 	.datain  (sda_o),
 	.dataout (sda_i)
 );
 altiobuf_opendrain scl_iobuf (
-	.dataio  (EX_IO[0]),
+	.dataio  (GPIO[35]),
 	.oe      (scl_e),
 	.datain  (scl_o),
 	.dataout (scl_i)
 );
+*/
+
+`ifdef IS_QUARTUS // Defined in Assignments -> Settings -> ... -> Verilog HDL Input
+// This doesn't work in Questa for some reason. vlog-2892 errors.
+`default_nettype none // Disable implicit creation of undeclared nets
+`endif
+
+
+module scroll_hat_mini_controller #(
+
+  parameter CLK_DIV = 32,
+
+  // clocks to delay during power up
+  parameter POWER_UP_DELAY = 32'd50_000_000, // 1 second
+  parameter REFRESH_DELAY = 32'd00_500_000, // 100x a second or 10ms
+
+  // Do not change these!
+  parameter NUM_COLS = 8'd17,
+  parameter NUM_ROWS = 8'd7,
+  parameter NUM_LEDS = (8)'(NUM_COLS * NUM_ROWS) // 17 x 7 = 119
+
+) (
+  input  logic        clk,
+  input  logic        reset,
+
+  // I²C Signals for the SHM
+  input  logic        scl_i,
+  output logic        scl_o, 
+  output logic        scl_e,
+  input  logic        sda_i, 
+  output logic        sda_o, 
+  output logic        sda_e,
+
+  // What to display: physical leds in a 17x7 matrix
+  input  logic [NUM_LEDS-1:0] physical_leds
+);
+
+localparam REPEAT_SZ = 6;
 
 // I2C controller outputs
 logic busy, abort, success;
@@ -136,16 +94,12 @@ localparam FRAME_PWM_OFFSET = 8'h24; // Where the PWM registers start - 144 of t
 localparam NUM_LED_CONTROL_REGISTERS = 8'h12; // 0x00-11
 localparam NUM_PWM_REGISTERS = 8'd144; // Not all are connected in our 17x7
 
-localparam NUM_COLS = 8'd17;
-localparam NUM_ROWS = 8'd7;
-localparam NUM_LEDS = (8)'(NUM_COLS * NUM_ROWS); // 17 x 7 = 119
-
 I2C_CONTROLLER #(
-  .CLK_DIV(32),
+  .CLK_DIV(CLK_DIV),
   .REPEAT_SZ(REPEAT_SZ)
 ) scroll_hat_mini_i2c (
-  .clk(CLOCK_50),
-  .reset(),
+  .clk,
+  .reset,
 
   .scl_i, .scl_o, .scl_e,
   .sda_i, .sda_o, .sda_e,
@@ -193,7 +147,7 @@ logic [7:0] send_data;
 logic [REPEAT_SZ-1:0] send_repeat;
 logic send_busy_seen;
 
-logic [31:0] power_up_delay = 32'd50_000_000; // 1 second
+logic [31:0] power_up_delay = POWER_UP_DELAY;
 
 // We have to send 144 PWMs, which is 4 x 36
 localparam NUM_PWM_REPEAT = 3'd4;
@@ -204,15 +158,8 @@ logic [7:0] next_pwm_location;
 logic [3:0] subroutine_calls = '0;
 logic ever_abort = '0;
 
-assign LEDR[9:6] = state;
-assign LEDR[17:14] = return_after_command;
-assign LEDR[13:10] = subroutine_calls;
-assign LEDG[8:5] = {busy, success, ever_abort, activate};
-
 logic [7:0] which_led;
 
-// We have physical leds in a 17x7 matrix
-logic [NUM_LEDS-1:0] physical_leds = 1;
 // And we have in-memory LEDs
 logic [NUM_PWM_REGISTERS-1:0] shm_leds;
 
@@ -251,7 +198,7 @@ always begin
   end: p2
 end
 
-always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
+always_ff @(posedge clk) begin: scroll_hat_mini_controller
 
   ever_abort <= ever_abort || abort;
 
@@ -336,7 +283,7 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
     next_pwm_location <= FRAME_PWM_OFFSET;
     which_led         <= '0;
     state             <= S_UPDATE_ALL;
-    power_up_delay    <= 32'd0_000_100;
+    power_up_delay    <= REFRESH_DELAY;
   end
 
   S_UPDATE_ALL: begin
@@ -356,9 +303,6 @@ always_ff @(posedge CLOCK_50) begin: scroll_hat_mini_controller
 
   S_UPDATE_ALL_DONE: begin
     if (power_up_delay == 0) begin
-      // Light the next LED
-      // shm_leds <= {shm_leds[NUM_PWM_REGISTERS-2:0], shm_leds[NUM_PWM_REGISTERS-1]};
-      physical_leds <= {physical_leds[NUM_LEDS-2:0], physical_leds[NUM_LEDS-1]};
       state <= S_BEGIN_UPDATE_ALL;
     end else begin
       power_up_delay <= power_up_delay - 1'd1;
@@ -412,7 +356,6 @@ end: scroll_hat_mini_controller
 
 
 endmodule
-
 
 `ifdef IS_QUARTUS // Defined in Assignments -> Settings -> ... -> Verilog HDL Input
 `default_nettype wire // turn implicit nets on again to avoid side-effects
