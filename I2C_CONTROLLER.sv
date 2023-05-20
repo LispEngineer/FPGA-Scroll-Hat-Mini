@@ -1,4 +1,5 @@
-// Copyright 2022 Douglas P. Fields, Jr. All Rights Reserved.
+// Copyright ⓒ 2023 Douglas P. Fields, Jr. symbolics@lisp.engineer
+// Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
 `ifdef IS_QUARTUS // Defined in Assignments -> Settings -> ... -> Verilog HDL Input
 // This doesn't work in Questa for some reason. vlog-2892 errors.

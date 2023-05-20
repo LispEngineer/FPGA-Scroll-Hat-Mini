@@ -1,9 +1,15 @@
+# Doug's I²C FPGA Components
+
+Copyright ⓒ 2023 [Douglas P. Fields, Jr.](mailto:symbolics@lisp.engineer)
+
+Licensed under Solderpad Hardware License 2.1 - see LICENSE
+
+-------------------------------------------------------------------------------
+
 # Pimoroni Scroll Hat Mini for FPGA
 
-Copyright ⓒ 2023 Douglas P. Fields, Jr. All Rights Reserved.
 
-
-# FPGA Connections
+## FPGA Connections
 
 Use 3.3V GPIO (pins 29-30) per IS31FL3731
 * Tested with both 5V and 3.3V feeds from GPIO and both work
@@ -40,7 +46,7 @@ There are 144 memory areas, two matrixes of 8 x 9
         6 |80 70 60 50 40 30 20 10 00 0E 1E 2E 3E 4E 5E 6E 7E
 
 
-# TODO
+## TODO
 
 * Try using built-in weak pull-up to make I2C bus work instead of external pullups
   * [StackOverflow Question](https://electronics.stackexchange.com/questions/248248/altera-fpga-i-o-weak-pull-ups) on this matter
@@ -53,7 +59,7 @@ There are 144 memory areas, two matrixes of 8 x 9
     (reduced overhead, faster refresh rate)
 
 
-# PiMoroni Scroll Hat Mini Reverse Engineering
+## PiMoroni Scroll Hat Mini Reverse Engineering
 
 * [Product page](https://shop.pimoroni.com/products/scroll-hat-mini)
 * [Driver chip](https://cdn.shopify.com/s/files/1/0174/1800/files/31FL3731_f2c53799-e354-4fe7-8111-71cfdacf2712.pdf?27380) - ISSI IS31FL3731
@@ -74,7 +80,7 @@ Pinout:
   * = PIN 29, 31, 36, 18
   * They are floating when unpressed, and pulled to ground when pressed
 
-## Other References
+### Other References
 
 * [Pinout for Unicorn HAT Mini](https://pinout.xyz/pinout/unicorn_hat_mini#)
   * ABXY on GPIO 5,6,16,20 or pin 29, 31, 36, 38 
@@ -83,7 +89,7 @@ Pinout:
   may use the same interface with different pinouts
 
 
-# How to use it?
+## How to use it?
 
 From: https://github.com/pimoroni/scroll-phat-hd/blob/master/library/scrollphathd/is31fl3731.py
 
@@ -118,7 +124,7 @@ For the Frame 1-8 registers, these are the offsets:
 _NUM_PIXELS = 144
 _NUM_FRAMES = 8
 
-## Set the enabled LEDs
+### Set the enabled LEDs
 
     enable_pattern = [
         # Matrix A   Matrix B
@@ -133,7 +139,7 @@ _NUM_FRAMES = 8
         0b01111111, 0b00000000,
     ]
 
-## To write frame data
+### To write frame data
 
 1. Take it out of shutdown mode:
   * Set bank to function register: write 8'b0000_1011 to 8'hFD
@@ -150,7 +156,7 @@ _NUM_FRAMES = 8
    * Switch to config bank
    * Write frame # to FRAME_REGISTER (1)
 
-## Turn all of them on
+### Turn all of them on
 
 1. Write 0 into FD
 2. Send seventeen 0111_1111 and one 0000_0000 to addresses 0-11
