@@ -7,7 +7,7 @@
 `endif
 
 
-module DE2_ScrollHatMini (
+module DE2_I2CPeripherals (
   //////////// CLOCK //////////
   input  logic        CLOCK_50,
   input  logic        CLOCK2_50,
