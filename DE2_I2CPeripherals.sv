@@ -117,7 +117,7 @@ keyestudio_8x8_controller #(
 );
 
 
-localparam INTERVAL = 32'd20_000_000;
+localparam INTERVAL = 32'd2_000_000;
 logic [31:0] interval_count = INTERVAL;
 
 // Animate

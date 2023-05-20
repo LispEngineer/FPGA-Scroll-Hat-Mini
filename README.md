@@ -4,6 +4,12 @@ Copyright ⓒ 2023 [Douglas P. Fields, Jr.](mailto:symbolics@lisp.engineer)
 
 Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
+## Inventory
+
+* Pimoroni Scroll Hat Mini
+* Keyestudio 8x8 LED matrix
+  * Similar to others like [Adafruit's](https://www.adafruit.com/product/872)
+
 ## TODO
 
 * Enhance `I2C_CONTROLLER` to be able to send a single byte.
@@ -179,6 +185,8 @@ References:
 * Chip: Vinka VK16K33 (Datasheet in [`datasheets/`](datasheets/) directory.
 * I²C address: 0x70
 * Python code on [GitHub](https://github.com/smittytone/HT16K33-Python)
+
+Note: This works fine with 3.3V Vcc.
 
 ## Initialization & drawing
 
