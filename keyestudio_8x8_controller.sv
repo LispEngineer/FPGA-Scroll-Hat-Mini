@@ -41,15 +41,15 @@ localparam MEM_SZ = $clog2(MEM_LEN);
 
 logic [7:0] mem[MEM_LEN];
 
-/*
-80 = col 1 (leftmost)
-40 = col 8 (rightmost)
-20 = col 7
-10 = col 6
-08 = col 5
-04 = col 4
-02 = col 3
-01 = col 2
+/*                        desired
+80 = col 1 (leftmost)     1
+40 = col 8 (rightmost)    2
+20 = col 7                3
+10 = col 6                4
+08 = col 5                5
+04 = col 4                6
+02 = col 3                7
+01 = col 2                8
 */
 
 // Map our LEDs to our MEMory
@@ -58,6 +58,15 @@ always_comb begin
     // Odd bytes are not used
     mem[(i << 1) + 1] = 8'h00;
     mem[i << 1][7] = leds[i][7];
+    /*
+    mem[i << 1][6] = leds[i][0];
+    mem[i << 1][5] = leds[i][1];
+    mem[i << 1][4] = leds[i][2];
+    mem[i << 1][3] = leds[i][3];
+    mem[i << 1][2] = leds[i][4];
+    mem[i << 1][1] = leds[i][5];
+    mem[i << 1][0] = leds[i][6];
+    */
     for (int j = 0; j < 7; j++)
       mem[i << 1][j] = leds[i][6-j];
   end

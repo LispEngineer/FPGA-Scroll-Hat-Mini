@@ -84,6 +84,7 @@ logic [7:0] mem[MEM_LEN];
 
 initial begin
   // Draw a silly box
+  /*
   mem[0] = 8'hFF;
   mem[1] = 8'h81;
   mem[2] = 8'h81;
@@ -92,6 +93,9 @@ initial begin
   mem[5] = 8'h81;
   mem[6] = 8'h81;
   mem[7] = 8'hFF;
+  */
+  mem = '{default: '0};
+  mem[0][0] = '1;
 end
 
 keyestudio_8x8_controller #(
@@ -121,8 +125,8 @@ always_ff @(posedge CLOCK_50) begin
   if (interval_count == '0) begin
     interval_count <= INTERVAL;
     for (int i = 0; i < MEM_LEN; i++) begin
-      mem[i][7:1] = mem[i][6:0];
-      mem[i][0] = mem[i == 0 ? MEM_LEN - 1 : i - 1][7];
+      mem[i][7:1] <= mem[i][6:0];
+      mem[i][0] <= mem[i == 0 ? MEM_LEN - 1 : i - 1][7];
     end
   end else begin
     interval_count <= interval_count - 1'd1;
