@@ -95,7 +95,9 @@ initial begin
   mem[14] = 8'hFF;
 end
 
-vk16k33_controller keyestudio_8x8_inst (
+vk16k33_controller #(
+  .REFRESH_DELAY(32'd00_200_000) // 250x a second
+) keyestudio_8x8_inst (
   .clk(CLOCK_50),
   .reset(),
 
@@ -111,6 +113,22 @@ vk16k33_controller keyestudio_8x8_inst (
   .mem
 );
 
+
+localparam INTERVAL = 32'd2_000_000;
+logic [31:0] interval_count = INTERVAL;
+
+// Animate
+always_ff @(posedge CLOCK_50) begin
+  if (interval_count == '0) begin
+    interval_count <= INTERVAL;
+    for (int i = 0; i < MEM_LEN; i++) begin
+      mem[i][7:1] = mem[i][6:0];
+      mem[i][0] = mem[i == 0 ? MEM_LEN - 1 : i - 1][7];
+    end
+  end else begin
+    interval_count <= interval_count - 1'd1;
+  end
+end
 
 `endif
 
