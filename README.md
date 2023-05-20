@@ -10,6 +10,14 @@ Licensed under Solderpad Hardware License 2.1 - see LICENSE
 * Keyestudio 8x8 LED matrix
   * Similar to others like [Adafruit's](https://www.adafruit.com/product/872)
 
+### Next Up
+
+* [Hiletgo SSH1106/SSD1306](https://www.amazon.com/gp/product/B01MRR4LVE/)
+  * 128x64 OLED = 16 x 4 characters if using 8x16 characters
+  * See my original I²C Controller code for a really bad driver for this display
+    (`sh1106_draw.sv`)
+
+
 ## TODO
 
 * Enhance `I2C_CONTROLLER` to be able to send a single byte.
@@ -234,3 +242,76 @@ Or alternately, send `8'b0000_####` with the address of the byte you want to wri
 For dimming, write E0 to EF.
 
 For blinking, write `8'b1000_xBB1` with 00 off, to 11 the slowest blinking
+
+-------------------------------------------------------------------------------
+
+# SSH1106 OLED display
+
+* Address: 3C in I2CDriver
+* Voltage: 3.3V
+* Speed: 400 kHz
+
+This will require a significant change for the text character generator
+because instead of providing 8 horizontal pixels at a time, it will need
+to provide a column of 8 vertical pixels at a time.
+
+## Datasheet notes
+
+* Page 13: Two 7-bit slave addresses: 011_1100, 011_1101 (3C, 3D) are used.
+* After slave address, one or more command words
+  * Command word = control byte (Co and DnotC) plus a data byte
+  * Last control byte is tagged with a cleared MSB, continuation bit "Co".
+  * After a control byte with cleared Co bit, only data bytes will follow.
+  * DnotC defines if data byte is a command or RAM data
+* Example from p14:
+  * Write: 7 bit address, 0 bit for WRITE
+  * Continuation example:
+    * 1 bit Co = 1
+    * 1 bit DnotC: 0 = data byte for command; 1 = data byte for RAM
+    * 6 bits control "byte"
+    * (ack)
+    * 8 bits data byte
+  * No continuation example:
+    * 1 bit Co = 0
+    * 1 bit DnotC
+    * 6 bits control "byte"
+    * (ack)
+    * 0 or more 8-bit data bytes until Stop
+* Not really sure how SA0 and A0 work for various data commands
+
+
+## Initialization
+
+Wait 100ms after Vcc is powered up before turning on display.
+(See OLED module section 4.2.1)
+
+* Turn on: 80 AF
+  * Turn off again: 80 AE
+
+Optional:
+* Reverse drawing (normally bottom right to bottom left): 80 A1
+  * This makes it draw from left to right
+* Reverse display colors: 80 A7
+  * Back to normal: 80 A6
+* Flip display top to bottom: 80 C8
+
+## Drawing
+
+* 80 B0 - page address 0 up through 80 B7
+* 80 00 - column address 0 (lower part)
+* 80 10 - column address 0 (upper part)
+* 40 00 00 00 00 00 00 00 00 (8x 00) - draws the bottom left square of the screen
+  (40 FF FF FF FF FF FF FF FF for white)
+  * First two bytes are NOT displayed on the screen (either in normal or reverse mode)
+  * MSB in each byte is the bottom most dot
+* Send that over and over to continue drawing leftward
+
+When reverse drawing and flip display are on (80 A1, 80 C8):
+* First two bytes are skipped in each row (still)
+* 80 is a 8-pixel column with MSB at the bottom and LSB at the top
+
+Better to send this:
+* 80 B0 80 02 80 10 - set first page, first VISIBLE column
+* 128 bytes (40 then any number of bytes until 128 sent)
+  * These are a single column of 8 pixels each byte
+  * MSB is at the bottom of the column
