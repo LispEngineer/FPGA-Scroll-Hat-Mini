@@ -12,6 +12,10 @@ Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
 ### Next Up
 
+* [ALMOCN 0.96" SSD1306 Yellow/Blue I²C OLED](https://www.amazon.com/gp/product/B08J25QLK7/)
+  * 128x64 OLED display with top 16 pixels yellow, then remaining cyan
+  * Working initialization sequence below
+
 * [Hiletgo SSH1106/SSD1306](https://www.amazon.com/gp/product/B01MRR4LVE/)
   * 128x64 OLED = 16 x 4 characters if using 8x16 characters
   * See my original I²C Controller code for a really bad driver for this display
@@ -20,9 +24,10 @@ Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
 ## TODO
 
-* Enhance `I2C_CONTROLLER` to be able to send a single byte.
-* Enhance `I2C_CONTROLLER` to handle any parameterized size of input instead of
+* Enhance `I2C_CONTROLLER` to handle any parameterized size of send data instead of
   a single location & data (and repeat).
+* Enhance text pixel generator to send characters 8 vertical pixels at a time
+  instead of 8 horizontal pixels at a time.
 
 
 
@@ -325,3 +330,116 @@ Better to send this:
 * Driver: SSD1306
 
 I could not get these to work with the I2CDriver after soldering on headers.
+
+------------------------------------------------------------------------
+
+# ALMOCN OLED Module
+
+* [Amazon](https://www.amazon.com/gp/product/B08J25QLK7/)
+* Resolution: 128x64
+* Driver: SSD1306
+
+References:
+* [Initialization Sequence](https://github.com/adafruit/Adafruit_SSD1306/blob/master/Adafruit_SSD1306.cpp#LL564C19-L564C19)
+* [Another initialization sequence](https://embetronicx.com/tutorials/linux/device-drivers/ssd1306-i2c-linux-device-driver-using-raspberry-pi/)
+  * Running this initialization routine turned on the display!
+
+## Initialization
+
+Commands start with `00` and data starts with `40`. Each command seems to be 1-byte.
+
+This display wraps around - you can keep writing data and it will fill the whole screen.
+
+Each data byte is 8 vertical pixels, MSB on the bottom.
+
+The top 16 pixels are yellow, then a small horizontal gap about 1-2 pixels high, 
+then the bottom 48 pixels are blue.
+
+See Datasheet Rev 0.4 Jan 2009 Solomon Systech SSD1306 App Note, section 3
+page 64 for initialization sequence.
+
+Here's one that works:
+```
+  /*
+  ** Commands to initialize the SSD_1306 OLED Display
+  */
+  SSD1306_Write(true, 0xAE); // Entire Display OFF
+  SSD1306_Write(true, 0xD5); // Set Display Clock Divide Ratio and Oscillator Frequency
+  SSD1306_Write(true, 0x80); // Default Setting for Display Clock Divide Ratio and Oscillator Frequency that is recommended
+  SSD1306_Write(true, 0xA8); // Set Multiplex Ratio
+  SSD1306_Write(true, 0x3F); // 64 COM lines
+  SSD1306_Write(true, 0xD3); // Set display offset
+  SSD1306_Write(true, 0x00); // 0 offset
+  SSD1306_Write(true, 0x40); // Set first line as the start line of the display
+  SSD1306_Write(true, 0x8D); // Charge pump
+  SSD1306_Write(true, 0x14); // Enable charge dump during display on
+  SSD1306_Write(true, 0x20); // Set memory addressing mode
+  SSD1306_Write(true, 0x00); // Horizontal addressing mode
+  SSD1306_Write(true, 0xA1); // Set segment remap with column address 127 mapped to segment 0
+  SSD1306_Write(true, 0xC8); // Set com output scan direction, scan from com63 to com 0
+  SSD1306_Write(true, 0xDA); // Set com pins hardware configuration
+  SSD1306_Write(true, 0x12); // Alternative com pin configuration, disable com left/right remap
+  SSD1306_Write(true, 0x81); // Set contrast control
+  SSD1306_Write(true, 0x80); // Set Contrast to 128
+  SSD1306_Write(true, 0xD9); // Set pre-charge period
+  SSD1306_Write(true, 0xF1); // Phase 1 period of 15 DCLK, Phase 2 period of 1 DCLK
+  SSD1306_Write(true, 0xDB); // Set Vcomh deselect level
+  SSD1306_Write(true, 0x20); // Vcomh deselect level ~ 0.77 Vcc
+  SSD1306_Write(true, 0xA4); // Entire display ON, resume to RAM content display
+  SSD1306_Write(true, 0xA6); // Set Display in Normal Mode, 1 = ON, 0 = OFF
+  SSD1306_Write(true, 0x2E); // Deactivate scroll
+  SSD1306_Write(true, 0xAF); // Display ON in normal mode
+```  
+
+I2C Driver script:
+```
+.\i2ccl COM4 w 0x3C 0x00,0xAE p
+.\i2ccl COM4 w 0x3C 0x00,0xD5,0x80 p
+.\i2ccl COM4 w 0x3C 0x00,0xA8,0x3F p
+.\i2ccl COM4 w 0x3C 0x00,0xD3,0x00 p
+.\i2ccl COM4 w 0x3C 0x00,0x40 p
+.\i2ccl COM4 w 0x3C 0x00,0x8D,0x14 p
+.\i2ccl COM4 w 0x3C 0x00,0x20,0x00 p
+.\i2ccl COM4 w 0x3C 0x00,0xA1 p
+.\i2ccl COM4 w 0x3C 0x00,0xC8 p
+.\i2ccl COM4 w 0x3C 0x00,0xDA,0x12 p
+.\i2ccl COM4 w 0x3C 0x00,0x81,0x80 p
+.\i2ccl COM4 w 0x3C 0x00,0xD9,0xF1 p
+.\i2ccl COM4 w 0x3C 0x00,0xDB,0x20 p
+.\i2ccl COM4 w 0x3C 0x00,0xA4 p
+.\i2ccl COM4 w 0x3C 0x00,0xA6 p
+.\i2ccl COM4 w 0x3C 0x00,0x2E p
+.\i2ccl COM4 w 0x3C 0x00,0xAF p
+```
+
+To write data:
+* Go to home position: 
+  * 00 21 00 7F - column start and end
+  * 00 22 00 07 - page start and end
+
+
+Fill screen with cross-hatch:
+```
+.\i2ccl COM4 w 0x3C 0x00,0x21,0x00,0x7F p
+.\i2ccl COM4 w 0x3C 0x00,0x22,0x00,0x07 p
+.\i2ccl COM4 w 0x3C 0x40,0x55,0xAA p
+... 128 * 8 / 2 times
+```
+
+To return to the beginning of the current page:
+```
+.\i2ccl COM4 w 0x3C 0x00,0x00 p
+.\i2ccl COM4 w 0x3C 0x00,0x10 p
+or simply just
+.\i2ccl COM4 w 0x3C 0x00,0x00,0x10 p
+```
+
+To go to the first page: (same column)
+```
+.\i2ccl COM4 w 0x3C 0x00,0xB0 p
+```
+
+To return to the top corner:
+```
+.\i2ccl COM4 w 0x3C 0x00,0xB0,0x00,0x10 p
+```
