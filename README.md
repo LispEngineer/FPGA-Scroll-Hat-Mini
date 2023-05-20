@@ -315,3 +315,13 @@ Better to send this:
 * 128 bytes (40 then any number of bytes until 128 sent)
   * These are a single column of 8 pixels each byte
   * MSB is at the bottom of the column
+
+------------------------------------------------------------------------
+
+# MakerFocus I2C OLED Display 0.91-inch
+
+* [Amazon](https://www.amazon.com/gp/product/B079BN2J8V/) - do not buy!
+* Resolution: 128x32
+* Driver: SSD1306
+
+I could not get these to work with the I2CDriver after soldering on headers.
