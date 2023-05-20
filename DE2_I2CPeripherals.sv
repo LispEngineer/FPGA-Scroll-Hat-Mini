@@ -77,25 +77,24 @@ altiobuf_opendrain sda_iobuf (
 `define KEYESTUDIO_8x8_DEMO
 `ifdef KEYESTUDIO_8x8_DEMO
 
-localparam MEM_LEN = 16;
+localparam MEM_LEN = 8;
 localparam MEM_SZ = $clog2(MEM_LEN);
 
 logic [7:0] mem[MEM_LEN];
 
 initial begin
-  mem = '{default: 8'd0};
   // Draw a silly box
   mem[0] = 8'hFF;
-  mem[2] = 8'hC0;
-  mem[4] = 8'hC0;
-  mem[6] = 8'hC0;
-  mem[8] = 8'hC0;
-  mem[10] = 8'hC0;
-  mem[12] = 8'hC0;
-  mem[14] = 8'hFF;
+  mem[1] = 8'h81;
+  mem[2] = 8'h81;
+  mem[3] = 8'h81;
+  mem[4] = 8'h81;
+  mem[5] = 8'h81;
+  mem[6] = 8'h81;
+  mem[7] = 8'hFF;
 end
 
-vk16k33_controller #(
+keyestudio_8x8_controller #(
   .REFRESH_DELAY(32'd00_200_000) // 250x a second
 ) keyestudio_8x8_inst (
   .clk(CLOCK_50),
@@ -110,11 +109,11 @@ vk16k33_controller #(
   .sda_e,
 
   // LED memory
-  .mem
+  .leds(mem)
 );
 
 
-localparam INTERVAL = 32'd2_000_000;
+localparam INTERVAL = 32'd20_000_000;
 logic [31:0] interval_count = INTERVAL;
 
 // Animate

@@ -389,6 +389,7 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[34]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[32]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[30]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[28]
+set_global_assignment -name SYSTEMVERILOG_FILE keyestudio_8x8_controller.sv
 set_global_assignment -name SYSTEMVERILOG_FILE vk16k33_controller.sv
 set_global_assignment -name SDC_FILE DE2_I2CPeripherals.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE DE2_I2CPeripherals.sv
