@@ -51,7 +51,7 @@ module scroll_hat_mini_controller #(
 
   // clocks to delay during power up
   parameter POWER_UP_DELAY = 32'd50_000_000, // 1 second
-  parameter REFRESH_DELAY = 32'd00_500_000, // 100x a second or 10ms
+  parameter REFRESH_DELAY = 32'd00_250_000, // 200x a second or 5ms
 
   // Do not change these!
   parameter NUM_COLS = 8'd17,
