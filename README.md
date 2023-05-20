@@ -80,7 +80,7 @@ Pinout:
   * ABXY on GPIO 5,6,16,20 or pin 29, 31, 36, 38 
 
 * [Pico Scroll Pack](https://shop.pimoroni.com/en-us/products/pico-scroll-pack)
-  may use the same interface.
+  may use the same interface with different pinouts
 
 
 # How to use it?
