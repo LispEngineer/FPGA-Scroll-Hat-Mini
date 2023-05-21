@@ -204,7 +204,7 @@ module i2c_controller_v2 #(
   // We only support a 3 byte transaction for now.
   input  logic       activate,  // True to begin when !busy
   input  logic [6:0] address,
-  input  logic       read, // 7th bit of the address
+  input  logic       read,      // 7th bit of the address
 
   input  logic [SEND_SZ-1:0] send_count,
   input  logic         [7:0] send_data [SEND_MAX],
@@ -400,6 +400,9 @@ always_ff @(posedge clk) begin
           stop_pulse <= 0;
         end
       end // S_IDLE case
+
+      //////////////////////////////////////////////////////////////////////////
+      // START /////////////////////////////////////////////////////////////////
         
       S_START: begin ////////////////////////////////////////////////////////
         // SDA H->L while SCL H
@@ -423,6 +426,9 @@ always_ff @(posedge clk) begin
             end
         endcase // S_START step
       end // S_START case
+
+      //////////////////////////////////////////////////////////////////////////
+      // WRITING (SENDing) /////////////////////////////////////////////////////
 
       S_SEND: begin  ////////////////////////////////////////////////////
         // HANDLE CURRENT BIT SENDING (or getting if ACK)
@@ -508,6 +514,8 @@ always_ff @(posedge clk) begin
             if (k_read_count != '0) begin
               // And need to start reading
               state <= S_READ;
+              byte_step <= 4'd0;
+              // Reading doesn't use byte_idx, it uses a shift register
             end else begin
               // And have nothing to read
               state <= S_STOP;
@@ -628,18 +636,18 @@ always_ff @(posedge clk) begin
           end
 
           byte_step <= 4'd0;
-          byte_idx <= 3'd7;
           
         end else if (step == 2'd3) begin
           // 2. In the middle of the byte: advance our byte step/idx
           byte_step <= byte_step + 3'd1;
-          byte_idx <= byte_idx - 2'd1; // Ignore underflow
         end
         
         // 3. We always advance our step
         step <= step + 2'd1; // allow overflow from 3 to 0
       end // S_ADDRESS/DATA# case
 
+      //////////////////////////////////////////////////////////////////////////
+      // STOP //////////////////////////////////////////////////////////////////
 
       S_STOP: begin /////////////////////////////////////////////////
         // SDA L->H while SCL H
