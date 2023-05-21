@@ -147,7 +147,7 @@ logic last_next = '0;
 // pixel row we're reading from now.
 always_comb begin: calc_addrs
   rom_rd_addr = (ROM_ADDR_SZ)'((char * CHAR_HEIGHT) + {pixel_row[0], pixel_col[2:0]});
-  text_rd_address = (TEXT_SZ)'((pixel_col / PIXEL_WIDTH) + ((pixel_row / 2) * TEXT_WIDTH));
+  text_rd_address = (TEXT_SZ)'((pixel_col / CHAR_WIDTH) + ((pixel_row / 2) * TEXT_WIDTH));
 end: calc_addrs
 
 
