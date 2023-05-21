@@ -146,7 +146,7 @@ logic last_next = '0;
 // (which has a number of ROM addresses) for the specific
 // pixel row we're reading from now.
 always_comb begin: calc_addrs
-  rom_rd_addr = (ROM_ADDR_SZ)'((char * CHAR_HEIGHT) + pixel_col + (pixel_row & 4'b1000));
+  rom_rd_addr = (ROM_ADDR_SZ)'((char * CHAR_HEIGHT) + {pixel_row[0], pixel_col[2:0]});
   text_rd_address = (TEXT_SZ)'((pixel_col / PIXEL_WIDTH) + ((pixel_row / 2) * TEXT_WIDTH));
 end: calc_addrs
 
@@ -189,7 +189,7 @@ always_ff @(posedge clk) begin: text_gen_main
       pixel_col <= '0;
 
       // Display the next 8 rows of pixels, including wrapping if necessary
-      pixel_row <= pixel_row == LAST_PIXEL_ROW ? '0 : pixel_row + 1'd1;;
+      pixel_row <= pixel_row == LAST_PIXEL_ROW ? '0 : pixel_row + 1'd1;
 
     end: next_pixel_row else begin
       pixel_col <= pixel_col + 1'd1;
