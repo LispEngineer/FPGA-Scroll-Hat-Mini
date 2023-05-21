@@ -69,12 +69,63 @@ altiobuf_opendrain sda_iobuf (
 	.dataout (sda_i)
 );
 
+assign LEDG[1:0] = {sda_o, scl_o};
+
+logic reset;
+assign reset = ~KEY[3];
+
+////////////////////////////////////////////////////////////////////////////////////////
+// SSD1306 OLED display demo
+
+`define SSD1306_DEMO
+`ifdef SSD1306_DEMO
+
+// DO NOT CHANGE THESE - from text_pixel_generator
+localparam TEXT_WIDTH  = 16;
+localparam TEXT_HEIGHT = 4;
+localparam TEXT_LEN = TEXT_WIDTH * TEXT_HEIGHT;
+localparam TEXT_SZ = $clog2(TEXT_LEN);
+
+logic               clk_text_wr;
+logic               text_wr_ena;
+logic         [7:0] text_wr_data;
+logic [TEXT_SZ-1:0] text_wr_addr;
+
+ssd1306_controller /* #(
+
+  parameter CLK_DIV = 32,
+
+  // clocks to delay during power up
+  parameter POWER_UP_DELAY = 32'd50_000_000, // 1 second
+  parameter REFRESH_DELAY = 32'd01_000_000, // 50x a second or 20ms
+) */ oled_controller_inst (
+  .clk(CLOCK_50),
+  .reset,
+
+  // I²C Signals
+  .scl_i,
+  .scl_o, 
+  .scl_e,
+  .sda_i, 
+  .sda_o, 
+  .sda_e,
+
+  // Character write interface to text RAM
+  .clk_text_wr,
+  .text_wr_ena,
+  .text_wr_data,
+  .text_wr_addr
+);
+
+
+`endif // SSD1306_DEMO
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Keyestudio 8x8 matrix demo
 
 
-`define KEYESTUDIO_8x8_DEMO
+`undef KEYESTUDIO_8x8_DEMO
 `ifdef KEYESTUDIO_8x8_DEMO
 
 localparam MEM_LEN = 8;

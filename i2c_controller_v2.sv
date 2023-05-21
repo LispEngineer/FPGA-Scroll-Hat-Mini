@@ -224,13 +224,13 @@ module i2c_controller_v2 #(
 
 // Our main states in our I2C state machine
 typedef enum int unsigned {
-  S_POWERON = 3'd0,
-  S_RESET   = 3'd1,
-  S_IDLE    = 3'd2,
-  S_START   = 3'd3,
-  S_SEND    = 3'd4,
-  S_READ    = 3'd5,
-  S_STOP    = 3'd6
+  S_POWERON = 0,
+  S_RESET   = 1,
+  S_IDLE    = 2,
+  S_START   = 3,
+  S_SEND    = 4,
+  S_READ    = 5,
+  S_STOP    = 6
 } state_t;
 
 

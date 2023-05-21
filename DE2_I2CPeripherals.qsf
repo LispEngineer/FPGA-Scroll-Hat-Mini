@@ -389,20 +389,6 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[34]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[32]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[30]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to GPIO[28]
-set_global_assignment -name SYSTEMVERILOG_FILE test_script_v2.sv
-set_global_assignment -name SYSTEMVERILOG_FILE test_i2c_v2.sv
-set_global_assignment -name SYSTEMVERILOG_FILE test_script.sv
-set_global_assignment -name SYSTEMVERILOG_FILE test_i2c_target.sv
-set_global_assignment -name SYSTEMVERILOG_FILE test_i2c.sv
-set_global_assignment -name SYSTEMVERILOG_FILE i2c_controller_v2.sv
-set_global_assignment -name SYSTEMVERILOG_FILE keyestudio_8x8_controller.sv
-set_global_assignment -name SYSTEMVERILOG_FILE vk16k33_controller.sv
-set_global_assignment -name SDC_FILE DE2_I2CPeripherals.sdc
-set_global_assignment -name SYSTEMVERILOG_FILE DE2_I2CPeripherals.sv
-set_global_assignment -name SYSTEMVERILOG_FILE scroll_hat_mini_controller.sv
-set_global_assignment -name QIP_FILE altiobuf_opendrain.qip
-set_global_assignment -name SYSTEMVERILOG_FILE I2C_CONTROLLER.sv
-set_global_assignment -name VERILOG_FILE Pushbutton_Debouncer.v
 set_global_assignment -name EDA_SIMULATION_TOOL "Questa Intel FPGA (Verilog)"
 set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
@@ -422,4 +408,22 @@ set_global_assignment -name EDA_TEST_BENCH_FILE I2C_CONTROLLER.sv -section_id i2
 set_global_assignment -name EDA_TEST_BENCH_FILE test_i2c.sv -section_id i2c_controller -hdl_version SystemVerilog_2005
 set_global_assignment -name EDA_TEST_BENCH_FILE test_i2c_target.sv -section_id i2c_controller -hdl_version SystemVerilog_2005
 set_global_assignment -name EDA_TEST_BENCH_FILE test_script.sv -section_id i2c_controller -hdl_version SystemVerilog_2005
+set_global_assignment -name QIP_FILE character_rom.qip
+set_global_assignment -name SYSTEMVERILOG_FILE text_pixel_generator_16x4_vertical.sv
+set_global_assignment -name QIP_FILE text_ram_40x15.qip
+set_global_assignment -name SYSTEMVERILOG_FILE ssd1306_controller.sv
+set_global_assignment -name SYSTEMVERILOG_FILE test_script_v2.sv
+set_global_assignment -name SYSTEMVERILOG_FILE test_i2c_v2.sv
+set_global_assignment -name SYSTEMVERILOG_FILE test_script.sv
+set_global_assignment -name SYSTEMVERILOG_FILE test_i2c_target.sv
+set_global_assignment -name SYSTEMVERILOG_FILE test_i2c.sv
+set_global_assignment -name SYSTEMVERILOG_FILE i2c_controller_v2.sv
+set_global_assignment -name SYSTEMVERILOG_FILE keyestudio_8x8_controller.sv
+set_global_assignment -name SYSTEMVERILOG_FILE vk16k33_controller.sv
+set_global_assignment -name SDC_FILE DE2_I2CPeripherals.sdc
+set_global_assignment -name SYSTEMVERILOG_FILE DE2_I2CPeripherals.sv
+set_global_assignment -name SYSTEMVERILOG_FILE scroll_hat_mini_controller.sv
+set_global_assignment -name QIP_FILE altiobuf_opendrain.qip
+set_global_assignment -name SYSTEMVERILOG_FILE I2C_CONTROLLER.sv
+set_global_assignment -name VERILOG_FILE Pushbutton_Debouncer.v
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

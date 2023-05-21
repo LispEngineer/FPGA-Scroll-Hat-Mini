@@ -488,3 +488,9 @@ nl --starting-line-number=0 --number-separator=": " font-transposed.raw >../isoF
 ```
 
 And then edit in the top and bottom lines
+
+## TODO
+
+* Update RAM
+* Update character ROM
+* Update character pixel generator
