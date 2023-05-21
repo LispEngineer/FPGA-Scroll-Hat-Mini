@@ -145,8 +145,8 @@ always_ff @(posedge clk) begin
         {i2c_address, i2c_readnotwrite} <= rom_comb[23:16];
         i2c_send_data[0] <= rom_comb[15:8];
         i2c_send_data[1] <= rom_comb[7:0];
-        // If we're reading, we send one byte, otherwise two
-        i2c_send_count <= rom_comb[16] ? (SEND_SZ)'(1) : (SEND_SZ)'(2);
+        // If we're reading, we send no bytes, otherwise two
+        i2c_send_count <= rom_comb[16] ? (SEND_SZ)'(0) : (SEND_SZ)'(2);
         // If we're reading, are we reading one or two?
         i2c_read_count <= rom_comb[16] ? (rom_comb[0] ? (READ_SZ)'(2) : (READ_SZ)'(1)) : '0;
         

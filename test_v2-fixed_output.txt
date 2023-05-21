@@ -1,0 +1,57 @@
+test_i2c_v2 -  TAKE TWO  - lines marked ******** are missing in v2 output from v1 output
+# Starting Simulation @                    0
+# ----------------------------------------
+# START, from state 0 @                 1790
+# ADDRESS BYTE: aa **US** write @                 4350
+# SENT ACK (is_write: 1) @                 4670
+# DATA BYTE RECEIVED: 01 @                 7230
+# SENT ACK (is_write: 1) @                 7550
+# DATA BYTE RECEIVED: 00 @                10110
+# SENT ACK (is_write: 1) @                10430
+# STOP, from state 4 @                10750
+# =========================================
+# ----------------------------------------
+# START, from state 0 @                11230
+# ADDRESS BYTE: 2a (not us) write @                13790
+# STOP, from state 0 @                14430
+# =========================================
+# ----------------------------------------
+# START, from state 0 @                14910
+# ADDRESS BYTE: ab **US**  read @                17470
+# SENT ACK (is_write: 0) @                17790
+# DATA BYTE WRITTEN - 0c @                20350
+# CONTROLLER: read byte 0c @                20410
+# NO ACK *** @                20670
+# STOP, from state 0 @                20990
+# =========================================
+# ----------------------------------------
+# START, from state 0 @                21470
+# ADDRESS BYTE: ab **US**  read @                24030
+# SENT ACK (is_write: 0) @                24350
+# DATA BYTE WRITTEN - 18 @                26910
+# CONTROLLER: read byte 18 @                26970
+# GOT ACK (is_write: 0) @                27230
+# DATA BYTE WRITTEN - 30 @                29790
+# CONTROLLER: read byte 30 @                29850
+# NO ACK *** @                30110
+# STOP, from state 0 @                30430
+# =========================================
+# ----------------------------------------
+# START, from state 0 @                30910
+# ADDRESS BYTE: 2b (not us)  read @                33470
+# STOP, from state 0 @                34110
+# =========================================
+# ----------------------------------------
+# START, from state 0 @                34590
+# ADDRESS BYTE: aa **US** write @                37150
+# SENT ACK (is_write: 1) @                37470
+# DATA BYTE RECEIVED: 16 @                40030
+# SENT ACK (is_write: 1) @                40350
+# DATA BYTE RECEIVED: 61 @                42910
+# SENT ACK (is_write: 1) @                43230
+# STOP, from state 4 @                43550
+# =========================================
+# Ending simulation @                48022
+# ** Note: $stop    : D:/Doug/src/FPGA/DE2_I2CPeripherals/test_i2c_v2.sv(175)
+#    Time: 48022 ns  Iteration: 0  Instance: /test_i2c_v2
+# Break in Module test_i2c_v2 at D:/Doug/src/FPGA/DE2_I2CPeripherals/test_i2c_v2.sv line 175
