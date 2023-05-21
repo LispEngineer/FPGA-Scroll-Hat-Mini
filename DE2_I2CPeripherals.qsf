@@ -412,7 +412,14 @@ set_global_assignment -name EDA_NATIVELINK_SIMULATION_TEST_BENCH i2c_controller_
 set_global_assignment -name EDA_TEST_BENCH_NAME i2c_controller_v2 -section_id eda_simulation
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id i2c_controller_v2
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME test_i2c_v2 -section_id i2c_controller_v2
+set_global_assignment -name EDA_TEST_BENCH_NAME i2c_controller -section_id eda_simulation
+set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id i2c_controller
+set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME test_i2c -section_id i2c_controller
 set_global_assignment -name EDA_TEST_BENCH_FILE i2c_controller_v2.sv -section_id i2c_controller_v2 -hdl_version SystemVerilog_2005
 set_global_assignment -name EDA_TEST_BENCH_FILE test_i2c_target.sv -section_id i2c_controller_v2 -hdl_version SystemVerilog_2005
 set_global_assignment -name EDA_TEST_BENCH_FILE test_i2c_v2.sv -section_id i2c_controller_v2 -hdl_version SystemVerilog_2005
 set_global_assignment -name EDA_TEST_BENCH_FILE test_script_v2.sv -section_id i2c_controller_v2 -hdl_version SystemVerilog_2005
+set_global_assignment -name EDA_TEST_BENCH_FILE I2C_CONTROLLER.sv -section_id i2c_controller -hdl_version SystemVerilog_2005
+set_global_assignment -name EDA_TEST_BENCH_FILE test_i2c.sv -section_id i2c_controller -hdl_version SystemVerilog_2005
+set_global_assignment -name EDA_TEST_BENCH_FILE test_i2c_target.sv -section_id i2c_controller -hdl_version SystemVerilog_2005
+set_global_assignment -name EDA_TEST_BENCH_FILE test_script.sv -section_id i2c_controller -hdl_version SystemVerilog_2005
