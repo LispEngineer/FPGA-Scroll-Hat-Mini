@@ -6,9 +6,14 @@ Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
 ## Inventory
 
-* Pimoroni Scroll Hat Mini
-* Keyestudio 8x8 LED matrix
+* I2C Controller v1 & v2
+  * v2 sends a configurable amount of data before receiving a configurable number
+    of bytes and except for repeating a single value over and over, is
+    more flexible in every way than v1
+* Pimoroni Scroll Hat Mini - using v1
+* Keyestudio 8x8 LED matrix - using v1
   * Similar to others like [Adafruit's](https://www.adafruit.com/product/872)
+
 
 ### Next Up
 
@@ -24,10 +29,14 @@ Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
 ## TODO
 
-* Enhance `I2C_CONTROLLER` to handle any parameterized size of send data instead of
+* [DONE] Enhance `I2C_CONTROLLER` to handle any parameterized size of send data instead of
   a single location & data (and repeat).
+* Convert SHM & Keyestudio controllers to use I²C Controller v2
 * Enhance text pixel generator to send characters 8 vertical pixels at a time
   instead of 8 horizontal pixels at a time.
+  * This will require a new font that gives the font data 8 vertical pixels per byte
+    rather than 8 horizontal pixels per byte.
+  * Need to write a little program to "rotate" every 8 bytes in the ROM file.
 
 
 

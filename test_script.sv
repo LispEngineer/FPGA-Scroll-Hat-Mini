@@ -1,5 +1,7 @@
-// Copyright 2022_Douglas P. Fields, Jr. All Rights Reserved.
-// Adapted from ADV7513 HDMI transmitter setup script.
+// Copyright ⓒ 2023 Douglas P. Fields, Jr. symbolics@lisp.engineer
+// Licensed under Solderpad Hardware License 2.1 - see LICENSE
+//
+// Adapted from my ADV7513 HDMI transmitter setup script.
 
 `ifdef IS_QUARTUS // Defined in Assignments -> Settings -> ... -> Verilog HDL Input
 // This doesn't work in Questa for some reason. vlog-2892 errors.
