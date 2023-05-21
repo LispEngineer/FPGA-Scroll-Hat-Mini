@@ -1,4 +1,4 @@
-Doug's I²C Peripherals
+codeDoug's I²C Peripherals
 Copyright 2023 Douglas P. Fields, Jr.
 
 Files in the datasheets subdirectory are copyright
@@ -7,3 +7,8 @@ sources and included here for convenience.
 
 Pushbutton_Debouncer.v from https://www.fpga4fun.com/Debouncer2.html
 is copyrighted fpga4fun.com & KNJN LLC.
+
+isoFont.mif is converted from a font available here:
+https://github.com/ChrisPVille/VGA-CharGen/blob/master/vgacg/isoFont.vh
+Copyright 2017 Christopher Parish
+That repository is licensed under Apache 2.0.

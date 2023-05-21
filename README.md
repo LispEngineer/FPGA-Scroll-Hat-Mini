@@ -452,3 +452,39 @@ To return to the top corner:
 ```
 .\i2ccl COM4 w 0x3C 0x00,0xB0,0x00,0x10 p
 ```
+
+------------------------------------------------------------------------------
+
+# Converting font
+
+To use the `isoFont.mif` font for a display that draws 8 vertical pixels at a
+time requires us to have a font with data in that order.
+
+So, take the 8x16 (w x h) font, and transpose the bits of every block of 8 bytes.
+
+```
+ABCDEFGH     A1234567
+11111111     B1234567
+22222222     C1234567
+33333333 --> D1234567
+44444444     E1234567
+55555555     F1234567
+66666666     G1234567
+77777777     H1234567
+```
+
+To get the raw font data:
+
+```
+egrep '^ ?[0-9]+: *[0-9a-fA-F]+;' isoFont.mif | cut -d: -f2 | cut -d\; -f1 >clj/font.raw
+```
+
+To transpose: see the clojure program in `clj` directory
+
+To get the data entries for the MIF file back:
+
+```
+nl --starting-line-number=0 --number-separator=": " font-transposed.raw >../isoFont-transposed.mif
+```
+
+And then edit in the top and bottom lines
