@@ -10,16 +10,18 @@ Licensed under Solderpad Hardware License 2.1 - see LICENSE
   * v2 sends a configurable amount of data before receiving a configurable number
     of bytes and except for repeating a single value over and over, is
     more flexible in every way than v1
+
 * Pimoroni Scroll Hat Mini - using v1
+
 * Keyestudio 8x8 LED matrix - using v1
   * Similar to others like [Adafruit's](https://www.adafruit.com/product/872)
 
+* 128x64 SSD1306 Display Controller - using v2
+  * Target device: [ALMOCN 0.96" SSD1306 Yellow/Blue I²C OLED](https://www.amazon.com/gp/product/B08J25QLK7/)
+  * 128x64 OLED display with top 16 pixels yellow, then remaining cyan
 
 ### Next Up
 
-* [ALMOCN 0.96" SSD1306 Yellow/Blue I²C OLED](https://www.amazon.com/gp/product/B08J25QLK7/)
-  * 128x64 OLED display with top 16 pixels yellow, then remaining cyan
-  * Working initialization sequence below
 
 * [Hiletgo SSH1106/SSD1306](https://www.amazon.com/gp/product/B01MRR4LVE/)
   * 128x64 OLED = 16 x 4 characters if using 8x16 characters
@@ -29,15 +31,7 @@ Licensed under Solderpad Hardware License 2.1 - see LICENSE
 
 ## TODO
 
-* [DONE] Enhance `I2C_CONTROLLER` to handle any parameterized size of send data instead of
-  a single location & data (and repeat).
 * Convert SHM & Keyestudio controllers to use I²C Controller v2
-* Enhance text pixel generator to send characters 8 vertical pixels at a time
-  instead of 8 horizontal pixels at a time.
-  * This will require a new font that gives the font data 8 vertical pixels per byte
-    rather than 8 horizontal pixels per byte.
-  * Need to write a little program to "rotate" every 8 bytes in the ROM file.
-
 
 
 -------------------------------------------------------------------------------
@@ -487,10 +481,4 @@ To get the data entries for the MIF file back:
 nl --starting-line-number=0 --number-separator=": " font-transposed.raw >../isoFont-transposed.mif
 ```
 
-And then edit in the top and bottom lines
-
-## TODO
-
-* Update RAM
-* Update character ROM
-* Update character pixel generator
+And then edit in the top and bottom lines of the `.mif` file and GTG.
