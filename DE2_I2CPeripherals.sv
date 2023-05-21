@@ -82,6 +82,7 @@ localparam MEM_SZ = $clog2(MEM_LEN);
 
 logic [7:0] mem[MEM_LEN];
 
+`ifdef IS_QUARTUS // QuestaSim doesn't like initial AND always_ff blocks
 initial begin
   // Draw a silly box
   /*
@@ -97,6 +98,7 @@ initial begin
   mem = '{default: '0};
   mem[0][0] = '1;
 end
+`endif // IS_QUARTUS
 
 keyestudio_8x8_controller #(
   .REFRESH_DELAY(32'd00_200_000) // 250x a second
