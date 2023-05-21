@@ -4,7 +4,7 @@
 // MODULE: altsyncram 
 
 // ============================================================
-// File Name: character_rom.v
+// File Name: character_rom_vertical.v
 // Megafunction Name(s):
 // 			altsyncram
 //
@@ -37,7 +37,7 @@
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
-module character_rom (
+module character_rom_vertical (
 	address,
 	clock,
 	q);
@@ -84,7 +84,7 @@ module character_rom (
 		altsyncram_component.address_aclr_a = "NONE",
 		altsyncram_component.clock_enable_input_a = "BYPASS",
 		altsyncram_component.clock_enable_output_a = "BYPASS",
-		altsyncram_component.init_file = "isoFont.mif",
+		altsyncram_component.init_file = "isoFont-transposed.mif",
 		altsyncram_component.intended_device_family = "Cyclone IV E",
 		altsyncram_component.lpm_hint = "ENABLE_RUNTIME_MOD=NO",
 		altsyncram_component.lpm_type = "altsyncram",
@@ -119,7 +119,7 @@ endmodule
 // Retrieval info: PRIVATE: JTAG_ENABLED NUMERIC "0"
 // Retrieval info: PRIVATE: JTAG_ID STRING "NONE"
 // Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
-// Retrieval info: PRIVATE: MIFfilename STRING "isoFont.mif"
+// Retrieval info: PRIVATE: MIFfilename STRING "isoFont-transposed.mif"
 // Retrieval info: PRIVATE: NUMWORDS_A NUMERIC "4096"
 // Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
 // Retrieval info: PRIVATE: RegAddr NUMERIC "1"
@@ -134,7 +134,7 @@ endmodule
 // Retrieval info: CONSTANT: ADDRESS_ACLR_A STRING "NONE"
 // Retrieval info: CONSTANT: CLOCK_ENABLE_INPUT_A STRING "BYPASS"
 // Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
-// Retrieval info: CONSTANT: INIT_FILE STRING "isoFont.mif"
+// Retrieval info: CONSTANT: INIT_FILE STRING "isoFont-transposed.mif"
 // Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "Cyclone IV E"
 // Retrieval info: CONSTANT: LPM_HINT STRING "ENABLE_RUNTIME_MOD=NO"
 // Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
@@ -151,10 +151,10 @@ endmodule
 // Retrieval info: CONNECT: @address_a 0 0 12 0 address 0 0 12 0
 // Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 // Retrieval info: CONNECT: q 0 0 8 0 @q_a 0 0 8 0
-// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom.v TRUE
-// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom.inc FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom.cmp FALSE
-// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom.bsf TRUE
-// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom_inst.v TRUE
-// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom_bb.v TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom_vertical.v TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom_vertical.inc FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom_vertical.cmp FALSE
+// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom_vertical.bsf TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom_vertical_inst.v TRUE
+// Retrieval info: GEN_FILE: TYPE_NORMAL character_rom_vertical_bb.v TRUE
 // Retrieval info: LIB_FILE: altera_mf

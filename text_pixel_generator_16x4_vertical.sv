@@ -77,7 +77,7 @@ logic [TEXT_SZ-1:0] text_rd_address;
 logic [7:0] char; // Character we will show
 assign cur_char = char;
 
-text_ram_40x15 text_ram_inst (
+text_ram_16x4 text_ram_inst (
   // RAM has two clock domains
 	.wrclock  (clk_text_wr),
 	.data     (text_wr_data),
@@ -102,7 +102,7 @@ logic [ROM_ADDR_SZ-1:0] rom_rd_addr;
 logic [7:0] rom_data;
 assign cur_pixels = rom_data;
 
-character_rom	character_rom_inst (
+character_rom_vertical	character_rom_inst (
 	.clock  (clk),
 	.address(rom_rd_addr),
 	.q      (rom_data)

@@ -426,4 +426,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE scroll_hat_mini_controller.sv
 set_global_assignment -name QIP_FILE altiobuf_opendrain.qip
 set_global_assignment -name SYSTEMVERILOG_FILE I2C_CONTROLLER.sv
 set_global_assignment -name VERILOG_FILE Pushbutton_Debouncer.v
+set_global_assignment -name QIP_FILE text_ram_16x4.qip
+set_global_assignment -name QIP_FILE character_rom_vertical.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
