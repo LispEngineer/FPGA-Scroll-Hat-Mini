@@ -86,10 +86,15 @@ localparam TEXT_HEIGHT = 4;
 localparam TEXT_LEN = TEXT_WIDTH * TEXT_HEIGHT;
 localparam TEXT_SZ = $clog2(TEXT_LEN);
 
-logic               clk_text_wr;
 logic               text_wr_ena;
 logic         [7:0] text_wr_data;
 logic [TEXT_SZ-1:0] text_wr_addr;
+
+// Write a selected byte to a selected position when key 0 pressed.
+assign text_wr_ena = ~KEY[0];
+assign text_wr_data = SW[7:0];
+assign text_wr_addr = (TEXT_SZ)'(SW[17:8]);
+
 
 ssd1306_controller /* #(
 
@@ -111,7 +116,7 @@ ssd1306_controller /* #(
   .sda_e,
 
   // Character write interface to text RAM
-  .clk_text_wr,
+  .clk_text_wr(CLOCK_50),
   .text_wr_ena,
   .text_wr_data,
   .text_wr_addr

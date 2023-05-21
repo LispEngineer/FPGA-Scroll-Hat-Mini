@@ -1,7 +1,10 @@
 // Copyright ⓒ 2023 Douglas P. Fields, Jr. symbolics@lisp.engineer
 // Licensed under Solderpad Hardware License 2.1 - see LICENSE
 //
-// Text pixel delivery from character memory.
+// Text pixel delivery from character memory. This differs from the
+// non _vertical version because it prepares pixels for displays which
+// take an 8-vertical list of pixels instead of an 8-horizontal list of
+// pixels ata a time.
 //
 // Font used is IBM Code Page 437 https://en.wikipedia.org/wiki/Code_page_437
 // with two additions:
@@ -9,7 +12,11 @@
 // Char 8'hFF = five full-width horizontal lines
 // (these are blank in the original font)
 //
-// The font size is 8x16 for ease of display, rather than
+// The font size is 8x16 for ease of display (powers of 2).
+//
+// The font is transposed for every 8 bytes (along the bits of those 8 bytes in
+// a square matrix) from the non _vertical version. See README.md for how
+// this transposition was accomplished.
 
 // When the inputs TOGGLE, it will then (with appropriate latency)
 // output the next character and the pixels for the row for those
@@ -61,6 +68,7 @@ module text_pixel_generator_16x4_vertical #(
 
 // The screen is this & each character is this big
 localparam CHAR_WIDTH = 8;
+localparam CHAR_WIDTH_SZ = $clog2(CHAR_WIDTH);
 localparam CHAR_HEIGHT = 16;
 localparam CHAR_HEIGHT_SZ = $clog2(CHAR_HEIGHT);
 
@@ -113,26 +121,58 @@ character_rom_vertical	character_rom_inst (
 
 // Count height pixel rows before moving to the next text memory row
 localparam LAST_TEXT_COL = (TEXT_WIDTH_SZ)'(TEXT_WIDTH - 1);
-localparam LAST_PIXEL_ROW = (CHAR_HEIGHT_SZ)'(CHAR_HEIGHT - 1);
+
+localparam PIXEL_WIDTH = TEXT_WIDTH * CHAR_WIDTH;
+localparam PIXEL_WIDTH_SZ = $clog2(PIXEL_WIDTH + 1);
+localparam LAST_PIXEL_COL = (PIXEL_WIDTH_SZ)'(PIXEL_WIDTH - 1);
+
+// Number of rows of 8 pixel columns we have to send
+localparam PIXEL_ROWS = TEXT_HEIGHT * (CHAR_HEIGHT / 8);
+localparam PIXEL_ROW_SZ = $clog2(PIXEL_ROWS + 1);
+localparam LAST_PIXEL_ROW = (PIXEL_ROW_SZ)'(PIXEL_ROWS - 1);
 
 // Registers
 logic [CHAR_HEIGHT_SZ:0] pixel_row; // 0-15
-logic [TEXT_WIDTH_SZ-1:0] text_col;
-logic [TEXT_HEIGHT_SZ-1:0] text_row;
-logic [TEXT_SZ-1:0] text_rd_row_start;
+logic [PIXEL_WIDTH_SZ:0] pixel_col; // 0-128 (16 * 8)
 logic last_restart = '0;
 logic last_next = '0;
 
-// Combinational
-logic [TEXT_SZ-1:0] next_text_rd_row_start;
+// 0000
+// 0001
+// 0111
+// 1000
 
 // We always read the ROM address for the specific character
 // (which has a number of ROM addresses) for the specific
 // pixel row we're reading from now.
-always_comb begin: calc_rom_addr
-  rom_rd_addr = (ROM_ADDR_SZ)'((char * CHAR_HEIGHT) + pixel_row); // (*16) == (<<4)
-  next_text_rd_row_start = (TEXT_SZ)'(text_rd_row_start + TEXT_WIDTH);
-end: calc_rom_addr
+always_comb begin: calc_addrs
+  rom_rd_addr = (ROM_ADDR_SZ)'((char * CHAR_HEIGHT) + pixel_col + (pixel_row & 4'b1000));
+  text_rd_address = (TEXT_SZ)'((pixel_col / PIXEL_WIDTH) + ((pixel_row / 2) * TEXT_WIDTH));
+end: calc_addrs
+
+
+// Display order:
+// Char 0 column 0
+// Char 0 column 1
+// Char 0 column 2
+// Char 0 column 3
+// Char 0 column 4
+// Char 0 column 5
+// Char 0 column 6
+// Char 0 column 7
+// <repeat Chars 1-15>
+// New set of 8 rows
+// Char 0 column 8
+// Char 0 column 9
+// Char 0 column 10
+// Char 0 column 11
+// Char 0 column 12
+// Char 0 column 13
+// Char 0 column 14
+// Char 0 column 15
+// <repeat Chars 1-15>
+// New set of 8 rows
+// Char 16 column 0 ...
 
 
 always_ff @(posedge clk) begin: text_gen_main
@@ -140,43 +180,20 @@ always_ff @(posedge clk) begin: text_gen_main
   last_next <= toggle_next;
 
   if (last_restart != toggle_restart || reset) begin: do_restart
-    text_rd_address <= '0;
-    text_rd_row_start <= '0;
     pixel_row <= '0;
-    text_col <= '0;
-    text_row <= '0;
-    // FIXME: More to do
+    pixel_col <= '0;
 
   end: do_restart else if (last_next != toggle_next) begin: do_next
 
-    // Get the next character to read
-    if (text_col == LAST_TEXT_COL) begin: next_pixel_row
-      // We've finished a whole row of characters's pixels
-      text_col <= '0; // X
+    if (pixel_col == LAST_PIXEL_COL) begin: next_pixel_row
+      pixel_col <= '0;
 
-      if (pixel_row == LAST_PIXEL_ROW) begin: next_text_row
-        // And we've finished the last row of the current characters.
-        // Advance to the next text row for reading.
-        // FIXME: Do we want to intentionally wrap if we don't get the restart?
-        text_rd_address <= next_text_rd_row_start;
-        text_rd_row_start <= next_text_rd_row_start;
-        text_row <= text_row + 1'd1; // Y
-        pixel_row <= '0; // Pixel Y
+      // Display the next 8 rows of pixels, including wrapping if necessary
+      pixel_row <= pixel_row == LAST_PIXEL_ROW ? '0 : pixel_row + 1'd1;;
 
-      end: next_text_row else begin: same_text_row
-        // We've reached JUST the last column, but there are still more
-        // rows of pixels for the current row's characters to look at.
-        text_rd_address <= text_rd_row_start; // So rewind to re-see the same text
-        pixel_row <= pixel_row + 1'd1;
-
-      end: same_text_row
-
-    end: next_pixel_row else begin: same_pixel_row
-      // Get the next character for the current row of text
-      // and the pixels for the same row of pixels.
-      text_col <= text_col + 1'd1;
-      text_rd_address <= text_rd_address + 1'd1;
-    end: same_pixel_row
+    end: next_pixel_row else begin
+      pixel_col <= pixel_col + 1'd1;
+    end
 
   end: do_next
 
